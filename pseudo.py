@@ -42,6 +42,10 @@ class InvalidSyntaxError(Error):
     def __init__(self, pos_start, pos_end, details=''):
         super().__init__(pos_start, pos_end, 'Invalid Synstax', details)
 
+class RunTimeError(Error): 
+    def __init__(self, pos_start, pos_end, details=''):
+        super().__init__(pos_start, pos_end, 'Runtime Error', details)
+
 # Token types
 TYPE_INT = 'INT'
 TYPE_FLOAT = 'FLOAT'
@@ -142,22 +146,31 @@ class NumberNode:
     def __init__(self, token: Token):
         self.token = token
 
+        self.pos_start = token.pos_start
+        self.pos_end = token.pos_end
+
     def __repr__(self):
         return f'{self.token}'
     
 class BinaryOperatorNode:
-    def __init__(self, left_node, operator_token, right_node):
+    def __init__(self, left_node, operator_token: Token, right_node):
         self.left_node = left_node
         self.operator_token = operator_token
         self.right_node = right_node
+
+        self.pos_start = left_node.pos_start
+        self.pos_end = right_node.pos_end
 
     def __repr__(self):
         return f'({self.left_node}, {self.operator_token}, {self.right_node})'
     
 class UnaryOperatorNode: 
-    def __init__(self, operator_token, node):
+    def __init__(self, operator_token: Token, node):
         self.operator_token = operator_token
         self.node = node
+
+        self.pos_start = operator_token.pos_start
+        self.pos_end = node.pos_end
 
     def __repr__(self):
         return f'({self.operator_token}, {self.node})'
@@ -252,6 +265,107 @@ class Parser:
 
         return result.success(left)
 
+class RunTimeResult:
+    def __init__(self):
+        self.value = None
+        self.error = None
+
+    def register(self, result):
+        if isinstance(result, RunTimeResult):
+            if result.error: self.error = result.error
+            return result.value
+        return result
+
+    def success(self, value):
+        self.value = value
+        return self
+
+    def failure(self, error):
+        self.error = error
+        return self
+
+class Number: 
+    def __init__(self, value):
+        self.value = value
+        self.set_position()
+
+    def set_position(self, pos_start: Position = None, pos_end: Position = None):
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+        return self
+    
+    def added_to(self, other): 
+        if isinstance(other, Number):
+            return Number(self.value + other.value), None
+        
+    def subract_by(self, other): 
+        if isinstance(other, Number):
+            return Number(self.value - other.value), None
+        
+    def multiply_by(self, other):
+        if isinstance(other, Number):
+            return Number(self.value * other.value), None
+        
+    def divide_by(self, other):
+        if isinstance(other, Number):
+            if other.value == 0:
+                return None, RunTimeError(other.pos_start, other.pos_end, "Division by zero")
+            return Number(self.value / other.value), None
+        
+    def __repr__(self):
+        return str(self.value)
+
+
+class Interpreter: 
+    def visit(self, node) -> RunTimeResult: 
+        """ Process the node and visit all the child nodes """
+        method_name = f'visit_{type(node).__name__}'
+        method = getattr(self, method_name, self.no_visit_method)
+        return method(node)
+    
+    def no_visit_method(self, node): 
+        raise Exception(f'No visit_{type(node).__name__}')
+    
+    def visit_NumberNode(self, node: NumberNode):
+        return RunTimeResult().success(Number(node.token.value).set_position(node.token.pos_start, node.token.pos_end))
+
+    def visit_BinaryOperatorNode(self, node: BinaryOperatorNode): 
+        RTresult = RunTimeResult()
+        left: Number = RTresult.register(self.visit(node.left_node))
+        if RTresult.error: return RTresult
+        right: Number = RTresult.register(self.visit(node.right_node))
+        if RTresult.error: return RTresult
+        
+        if node.operator_token.type == TYPE_PLUS:
+            result, error = left.added_to(right)
+        elif node.operator_token.type == TYPE_MINUS:
+            result, error = left.subract_by(right)
+        elif node.operator_token.type == TYPE_MUL:
+            result, error = left.multiply_by(right)
+        elif node.operator_token.type == TYPE_DIV:
+            result, error = left.divide_by(right)
+
+        if error: 
+            return RTresult.failure(error)
+        else: 
+            return RTresult.success(result.set_position(node.pos_start, node.pos_end))
+
+    def visit_UnaryOperatorNode(self, node: UnaryOperatorNode):
+        RTresult = RunTimeResult()
+        number: Number = RTresult.register(self.visit(node.node))
+        if RTresult.error: return RTresult
+
+        error = None
+
+        if node.operator_token.type == TYPE_MINUS:
+            number, error = number.multiply_by(Number(-1))
+
+        if error:
+            return RTresult.failure(error)
+        else: 
+            return RTresult.success(number.set_position(node.pos_start, node.pos_end))
+
+
 def run(fn, text):
     lexer = Lexer(fn, text)
     tokens, error = lexer.make_tokens()
@@ -260,5 +374,10 @@ def run(fn, text):
     # Generate Tree
     parser = Parser(tokens)
     tree = parser.parse()
+    if tree.error: return None, tree.error
 
-    return tree.node, tree.error
+    # Run program
+    interpreter = Interpreter()
+    result = interpreter.visit(tree.node)
+
+    return result.value, result.error
