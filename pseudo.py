@@ -72,6 +72,7 @@ TYPE_PLUS = 'PLUS'
 TYPE_MINUS = 'MINUS'
 TYPE_MUL = 'MUL'
 TYPE_DIV = 'DIV'
+TYPE_POW = 'POW'
 TYPE_LPAREN = 'LPAREN'
 TYPE_RPAREN = 'RPAREN'
 TYPE_EOF = 'EOF'
@@ -104,6 +105,10 @@ class Lexer:
     def advance(self): 
         self.pos.advance(self.current_char)
         self.current_char = self.text[self.pos.idx] if self.pos.idx < len(self.text) else None
+
+    def get_next_char(self): 
+        next_pos = self.pos.copy().advance()
+        return self.text[next_pos.idx] if next_pos.idx < len(self.text) else None
     
     def make_tokens(self): 
         tokens = []
@@ -118,7 +123,15 @@ class Lexer:
                 tokens.append(Token(TYPE_MINUS, pos_start=self.pos))
                 self.advance()
             elif self.current_char == '*':
-                tokens.append(Token(TYPE_MUL, pos_start=self.pos))
+                if self.get_next_char() == '*':
+                    tokens.append(Token(TYPE_POW, '**', pos_start=self.pos))
+                    self.advance()
+                    self.advance()
+                else: 
+                    tokens.append(Token(TYPE_MUL, pos_start=self.pos))
+                    self.advance()
+            elif self.current_char == '^':
+                tokens.append(Token(TYPE_POW, pos_start=self.pos))
                 self.advance()
             elif self.current_char == '/':
                 tokens.append(Token(TYPE_DIV, pos_start=self.pos))
@@ -236,17 +249,11 @@ class Parser:
             ))
         return result
     
-    def factor(self): 
+    def atom(self): 
         response = ParseResult()
         token = self.current_token
 
-        if token.type in (TYPE_PLUS, TYPE_MINUS): 
-            response.register(self.advance())
-            factor = response.register(self.factor())
-            if response.error: return response
-            return response.success(UnaryOperatorNode(token, factor))
-        
-        elif token.type in (TYPE_INT, TYPE_FLOAT): 
+        if token.type in (TYPE_INT, TYPE_FLOAT): 
             response.register(self.advance())
             return response.success(NumberNode(token))
         
@@ -261,8 +268,23 @@ class Parser:
                 return response.failure(InvalidSyntaxError(
                     self.current_token.pos_start, self.current_token.pos_end, "Expected ')'"
                 ))
+            
+        return response.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, '+', '-', or '('"))
+    
+    def power(self): 
+        return self.binary_operation(self.atom, (TYPE_POW, ), self.factor)
+    
+    def factor(self): 
+        response = ParseResult()
+        token = self.current_token
+
+        if token.type in (TYPE_PLUS, TYPE_MINUS): 
+            response.register(self.advance())
+            factor = response.register(self.factor())
+            if response.error: return response
+            return response.success(UnaryOperatorNode(token, factor))
         
-        return response.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int or float"))
+        return self.power()
 
     def term(self): 
         return self.binary_operation(self.factor, (TYPE_DIV, TYPE_MUL))
@@ -270,15 +292,15 @@ class Parser:
     def expr(self): 
         return self.binary_operation(self.term, (TYPE_PLUS, TYPE_MINUS))
     
-    def binary_operation(self, func, op_tokens): 
+    def binary_operation(self, func_a, op_tokens, func_b=None): 
         result = ParseResult()
-        left = result.register(func())
+        left = result.register(func_a())
         if result.error: return result
 
         while self.current_token.type in op_tokens: 
             op_token = self.current_token
             result.register(self.advance())
-            right = result.register(func())
+            right = result.register(func_b()) if func_b else result.register(func_a())
             if result.error: return result
             left = BinaryOperatorNode(left, op_token, right)
 
@@ -336,6 +358,10 @@ class Number:
                 return None, RunTimeError(other.pos_start, other.pos_end, "Division by zero", self.context)
             return Number(self.value / other.value).set_context(self.context), None
         
+    def power_by(self, other): 
+        if isinstance(other, Number):
+            return Number(self.value ** other.value).set_context(self.context), None
+        
     def __repr__(self):
         return str(self.value)
 
@@ -375,6 +401,8 @@ class Interpreter:
             result, error = left.multiply_by(right)
         elif node.operator_token.type == TYPE_DIV:
             result, error = left.divide_by(right)
+        elif node.operator_token.type == TYPE_POW:
+            result, error = left.power_by(right)
 
         if error: 
             return RTresult.failure(error)
