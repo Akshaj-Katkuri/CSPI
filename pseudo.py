@@ -150,7 +150,7 @@ class Lexer:
             elif self.current_char == '^':
                 tokens.append(Token(TYPE_POW, pos_start=self.pos))
                 self.advance()
-            elif self.current_char == '=': # Assignment operator
+            elif self.current_char == '=': # Assignment operator #TODO: Change this to accept ← or <-
                 tokens.append(Token(TYPE_EQ, pos_start=self.pos))
                 self.advance()
             elif self.current_char == '(':
@@ -252,20 +252,23 @@ class ParseResult:
     def __init__(self):
         self.error = None
         self.node = None
+        self.advance_count = 0
 
-    def register(self, response): 
-        if isinstance(response, ParseResult): 
-            if response.error: self.error = response.error
-            return response.node
-        
-        return response
+    def register_advancement(self): 
+        self.advance_count += 1
+
+    def register(self, result): 
+        self.advance_count += result.advance_count
+        if result.error: self.error = result.error
+        return result.node
 
     def success(self, node): 
         self.node = node
         return self
 
     def failure(self, error): 
-        self.error = error
+        if not self.error or self.advance_count == 0:
+            self.error = error
         return self
 
 # Parser
@@ -291,43 +294,48 @@ class Parser:
         return result
     
     def atom(self): 
-        response = ParseResult()
+        result = ParseResult()
         token = self.current_token
 
         if token.type in (TYPE_INT, TYPE_FLOAT): 
-            response.register(self.advance())
-            return response.success(NumberNode(token))
+            result.register_advancement()
+            self.advance()
+            return result.success(NumberNode(token))
         
         elif token.type == TYPE_IDENTIFIER:
-            response.register(self.advance())
-            return response.success(VariableAccessNode(token))
+            result.register_advancement()
+            self.advance()
+            return result.success(VariableAccessNode(token))
         
         elif token.type == TYPE_LPAREN: 
-            response.register(self.advance())
-            expr = response.register(self.expr())
-            if response.error: return response
+            result.register_advancement()
+            self.advance()
+            expr = result.register(self.expr())
+            if result.error: return result
             if self.current_token.type == TYPE_RPAREN: 
-                response.register(self.advance())
-                return response.success(expr)
+                result.register_advancement()
+                self.advance()
+                return result.success(expr)
             else:
-                return response.failure(InvalidSyntaxError(
+                return result.failure(InvalidSyntaxError(
                     self.current_token.pos_start, self.current_token.pos_end, "Expected ')'"
                 ))
             
-        return response.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, '+', '-', or '('"))
+        return result.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, '+', '-', or '('"))
     
     def power(self): 
         return self.binary_operation(self.atom, (TYPE_POW, ), self.factor)
     
     def factor(self): 
-        response = ParseResult()
+        result = ParseResult()
         token = self.current_token
 
         if token.type in (TYPE_PLUS, TYPE_MINUS): 
-            response.register(self.advance())
-            factor = response.register(self.factor())
-            if response.error: return response
-            return response.success(UnaryOperatorNode(token, factor))
+            result.register_advancement()
+            self.advance()
+            factor = result.register(self.factor())
+            if result.error: return result
+            return result.success(UnaryOperatorNode(token, factor))
         
         return self.power()
 
@@ -338,7 +346,8 @@ class Parser:
         result = ParseResult()
 
         if self.current_token.matches(TYPE_KEYWORD, 'VAR'):
-            result.register(self.advance())
+            result.register_advancement()
+            self.advance()
 
             if self.current_token.type != TYPE_IDENTIFIER:
                 return result.failure(InvalidSyntaxError(
@@ -346,19 +355,29 @@ class Parser:
                 ))
             
             var_name = self.current_token
-            result.register(self.advance())
+            result.register_advancement()
+            self.advance()
 
             if self.current_token.type != TYPE_EQ:
                 return result.failure(InvalidSyntaxError(
                     self.current_token.pos_start, self.current_token.pos_end, "Expected '←'"
                 ))
             
-            result.register(self.advance())
+            result.register_advancement()
+            self.advance()
             expr = result.register(self.expr())
             if result.error: return result
             return result.success(VariableAssignNode(var_name, expr))
 
-        return self.binary_operation(self.term, (TYPE_PLUS, TYPE_MINUS))
+        node = result.register(self.binary_operation(self.term, (TYPE_PLUS, TYPE_MINUS)))
+
+        if result.error: 
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end,
+                "Expected 'VAR', int, float, identifier, '+', '-', or '('"
+            ))
+        
+        return result.success(node)
     
     def binary_operation(self, func_a, op_tokens, func_b=None): 
         result = ParseResult()
@@ -367,7 +386,8 @@ class Parser:
 
         while self.current_token.type in op_tokens: 
             op_token = self.current_token
-            result.register(self.advance())
+            result.register_advancement()
+            self.advance()
             right = result.register(func_b()) if func_b else result.register(func_a())
             if result.error: return result
             left = BinaryOperatorNode(left, op_token, right)
@@ -430,6 +450,12 @@ class Number:
         if isinstance(other, Number):
             return Number(self.value ** other.value).set_context(self.context), None
         
+    def copy(self): 
+        copy = Number(self.value)
+        copy.set_position(self.pos_start, self.pos_end)
+        copy.set_context(self.context)
+        return copy
+        
     def __repr__(self):
         return str(self.value)
 
@@ -443,9 +469,9 @@ class Context:
 class SymbolTable:
     def __init__(self):
         self.symbols = {}
-        self.parent = None
+        self.parent: SymbolTable = None
 
-    def get(self, name): 
+    def get(self, name) -> Number: #for now only return's number 
         value = self.symbols.get(name, None)
         if value == None and self.parent:
             return self.parent.get(name)
@@ -484,6 +510,7 @@ class Interpreter:
                 context
             ))
         
+        value = value.copy().set_position(node.pos_start, node.pos_end)
         return RTresult.success(value)
     
     def visit_VariableAssignNode(self, node: VariableAssignNode, context: Context):
