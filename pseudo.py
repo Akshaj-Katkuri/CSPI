@@ -18,6 +18,13 @@ class Position:
         
         return self
     
+    def revert(self, idx, col, ln): 
+        self.idx = idx
+        self.col = col
+        self.ln = ln
+
+        return self
+    
     def copy(self): 
         return Position(self.idx, self.ln, self.col, self.fn, self.ftxt)
 
@@ -172,9 +179,14 @@ class Lexer:
         num_str = ''
         dot_count = 0 # to check if float or integer
         pos_start = self.pos.copy()
+        starting_char = self.current_char
 
-        while self.current_char != None and (self.current_char.isdigit() or self.current_char == '.'):
-            if self.current_char == '.':
+        while self.current_char != None: # and (self.current_char.isdigit() or self.current_char == '.'):
+            if self.current_char.isalpha(): 
+                self.current_char = starting_char
+                self.pos.revert(pos_start.idx, pos_start.col, pos_start.ln)
+                return self.make_identifier()
+            elif self.current_char == '.':
                 if dot_count == 1: break #TODO: implement raise error here
                 dot_count += 1
                 num_str += '.'
@@ -279,11 +291,14 @@ class Parser:
         self.token_idx = -1
         self.advance()
 
-    def advance(self): 
+    def advance(self) -> Token: 
         self.token_idx += 1
         if self.token_idx < len(self.tokens):
             self.current_token: Token = self.tokens[self.token_idx]
         return self.current_token
+    
+    def get_next_token(self) -> Token: 
+        return self.tokens[self.token_idx + 1] if self.token_idx + 1 < len(self.tokens) else None
     
     def parse(self): 
         result = self.expr()
@@ -360,11 +375,25 @@ class Parser:
 
             if self.current_token.type != TYPE_EQ:
                 return result.failure(InvalidSyntaxError(
-                    self.current_token.pos_start, self.current_token.pos_end, "Expected '←'"
+                    self.current_token.pos_start, self.current_token.pos_end, "Expected '='" #TODO: Change this to left arrow later
                 ))
             
             result.register_advancement()
             self.advance()
+
+            expr = result.register(self.expr())
+            if result.error: return result
+            return result.success(VariableAssignNode(var_name, expr))
+        
+        if self.current_token.type == TYPE_IDENTIFIER and self.get_next_token().type == TYPE_EQ: 
+            var_name = self.current_token
+            
+            result.register_advancement()
+            self.advance() # now at TYPE_EQ
+
+            result.register_advancement()
+            self.advance() # now at value
+
             expr = result.register(self.expr())
             if result.error: return result
             return result.success(VariableAssignNode(var_name, expr))
