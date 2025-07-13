@@ -7,3 +7,8 @@ Variables:
 Operators: 
  - Incorporate MOD operator 
  - Include grammer rules for MOD operator
+
+Types: 
+ - Add boolean Types
+ - Support for boolean types with logical operators
+ - Change default symbol tables for 'TRUE' and 'FALSE' to boolean instead of Number object

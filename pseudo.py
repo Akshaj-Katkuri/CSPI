@@ -181,14 +181,22 @@ class Lexer:
                 if error: return [], error
                 tokens.append(token)
             elif self.current_char == '=': #TODO: Change this to accept ← or <- for assignment operator
-                tokens.append(self.make_equals())
+                token, error = self.make_equals()
+                if error: return [], error
+                tokens.append(token)
+            elif self.current_char == '<': 
+                token, error = self.make_less_than()
+                if error: return [], error
+                tokens.append(token)
+            elif self.current_char == '>': 
+                token, error = self.make_greater_than()
                 if error: return [], error
                 tokens.append(token)
             else: 
                 pos_start = self.pos.copy()
                 char = self.current_char
                 self.advance()
-                return [], IllegalCharError(pos_start, self.pos.idx, f"'{char}'")
+                return [], IllegalCharError(pos_start, self.pos, f"'{char}'")
 
         tokens.append(Token(TYPE_EOF, pos_start=self.pos))
         return tokens, None
@@ -199,7 +207,7 @@ class Lexer:
         pos_start = self.pos.copy()
         starting_char = self.current_char
 
-        while self.current_char != None: # and (self.current_char.isdigit() or self.current_char == '.'):
+        while self.current_char != None and (self.current_char.isdigit() or self.current_char == '.' or self.current_char.isalpha()):
             if self.current_char.isalpha(): 
                 self.current_char = starting_char
                 self.pos.revert(pos_start.idx, pos_start.col, pos_start.ln)
@@ -250,7 +258,7 @@ class Lexer:
 
         return Token(token_type, pos_start=pos_start, pos_end=self.pos), None
     
-    def make_less_than(self): 
+    def make_less_than(self):
         token_type = TYPE_LT
         pos_start = self.pos.copy()
         self.advance()
@@ -418,6 +426,31 @@ class Parser:
 
     def term(self): 
         return self.binary_operation(self.factor, (TYPE_DIV, TYPE_MUL))
+    
+    def arith_expr(self): 
+        return self.binary_operation(self.term, (TYPE_PLUS, TYPE_MINUS))
+    
+    def comp_expr(self): 
+        result = ParseResult()
+
+        if self.current_token.matches(TYPE_KEYWORD, 'NOT'): 
+            op_token = self.current_token
+            result.register_advancement()
+            self.advance()
+
+            node = result.register(self.comp_expr())
+            if result.error: return result
+            return result.success(UnaryOperatorNode(op_token, node))
+
+        node = result.register(self.binary_operation(self.arith_expr, (TYPE_EE, TYPE_NE, TYPE_LT, TYPE_GT, TYPE_LTE, TYPE_GTE)))
+
+        if result.error: 
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected int, float, identifier, '+', '-', '(', or 'NOT")
+            )
+        
+        return result.success(node)
 
     def expr(self): 
         result = ParseResult()
@@ -460,7 +493,7 @@ class Parser:
             if result.error: return result
             return result.success(VariableAssignNode(var_name, expr))
 
-        node = result.register(self.binary_operation(self.term, (TYPE_PLUS, TYPE_MINUS)))
+        node = result.register(self.binary_operation(self.comp_expr, ((TYPE_KEYWORD, 'AND'), (TYPE_KEYWORD, 'OR'))))
 
         if result.error: 
             return result.failure(InvalidSyntaxError(
@@ -470,12 +503,12 @@ class Parser:
         
         return result.success(node)
     
-    def binary_operation(self, func_a, op_tokens, func_b=None): 
+    def binary_operation(self, func_a, op_tokens, func_b=None) -> ParseResult: 
         result = ParseResult()
         left = result.register(func_a())
         if result.error: return result
 
-        while self.current_token.type in op_tokens: 
+        while self.current_token.type in op_tokens or (self.current_token.type, self.current_token.value) in op_tokens: 
             op_token = self.current_token
             result.register_advancement()
             self.advance()
@@ -540,6 +573,41 @@ class Number:
     def power_by(self, other): 
         if isinstance(other, Number):
             return Number(self.value ** other.value).set_context(self.context), None
+        
+    def get_comparison_eq(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value == other.value)).set_context(self.context), None
+        
+    def get_comparison_ne(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value != other.value)).set_context(self.context), None
+        
+    def get_comparison_lt(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value < other.value)).set_context(self.context), None
+        
+    def get_comparison_gt(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value > other.value)).set_context(self.context), None
+        
+    def get_comparison_lte(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value <= other.value)).set_context(self.context), None
+        
+    def get_comparison_gte(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value >= other.value)).set_context(self.context), None
+        
+    def and_by(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value and other.value)).set_context(self.context), None
+        
+    def or_by(self, other): 
+        if isinstance(other, Number): 
+            return Number(int(self.value or other.value)).set_context(self.context), None
+        
+    def notted(self): 
+        return Number(1 if self.value == 0 else 0).set_context(self.context), None
         
     def copy(self): 
         copy = Number(self.value)
@@ -630,6 +698,22 @@ class Interpreter:
             result, error = left.divide_by(right)
         elif node.operator_token.type == TYPE_POW:
             result, error = left.power_by(right)
+        elif node.operator_token.type == TYPE_EE: 
+            result, error = left.get_comparison_eq(right)
+        elif node.operator_token.type == TYPE_NE:
+            result, error = left.get_comparison_ne(right)
+        elif node.operator_token.type == TYPE_LT:
+            result, error = left.get_comparison_lt(right)
+        elif node.operator_token.type == TYPE_GT:
+            result, error = left.get_comparison_gt(right)
+        elif node.operator_token.type == TYPE_LTE:
+            result, error = left.get_comparison_lte(right)
+        elif node.operator_token.type == TYPE_GTE:
+            result, error = left.get_comparison_gte(right)
+        elif node.operator_token.matches(TYPE_KEYWORD, 'AND'): 
+            result, error = left.and_by(right)
+        elif node.operator_token.matches(TYPE_KEYWORD, 'OR'): 
+            result, error = left.or_by(right)
 
         if error: 
             return RTresult.failure(error)
@@ -645,6 +729,8 @@ class Interpreter:
 
         if node.operator_token.type == TYPE_MINUS:
             number, error = number.multiply_by(Number(-1))
+        elif node.operator_token.matches(TYPE_KEYWORD, 'NOT'): 
+            number, error = number.notted()
 
         if error:
             return RTresult.failure(error)
@@ -652,7 +738,9 @@ class Interpreter:
             return RTresult.success(number.set_position(node.pos_start, node.pos_end))
 
 global_symbol_table = SymbolTable()
-global_symbol_table.set("null", Number(0))
+global_symbol_table.set("NULL", Number(0))
+global_symbol_table.set("TRUE", Number(1))
+global_symbol_table.set("FALSE", Number(0))
 
 def run(fn, text):
     lexer = Lexer(fn, text)
