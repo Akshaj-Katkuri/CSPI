@@ -45,6 +45,10 @@ class IllegalCharError(Error):
     def __init__(self, pos_start, pos_end, details):
         super().__init__(pos_start, pos_end, 'Illegal Character', details)
 
+class ExpectedCharacterError(Error): 
+    def __init__(self, pos_start, pos_end, details): 
+        super().__init__(pos_start, pos_end, 'Expected Character', details)
+
 class InvalidSyntaxError(Error): 
     def __init__(self, pos_start, pos_end, details=''):
         super().__init__(pos_start, pos_end, 'Invalid Synstax', details)
@@ -85,10 +89,19 @@ TYPE_POW = 'POW'
 TYPE_EQ = 'EQ' # Assignment operator
 TYPE_LPAREN = 'LPAREN'
 TYPE_RPAREN = 'RPAREN'
+TYPE_EE = 'EE' # ==
+TYPE_NE = 'NE' # !=
+TYPE_LT = 'LT' # <
+TYPE_GT = 'GT' # >
+TYPE_LTE = 'LTE' # <=  
+TYPE_GTE = 'GTE' # >=
 TYPE_EOF = 'EOF'
 
 KEYWORDS = [
-    'VAR'
+    'VAR', 
+    'AND', 
+    'OR', 
+    'NOT'
 ]
 
 class Token(): 
@@ -157,15 +170,20 @@ class Lexer:
             elif self.current_char == '^':
                 tokens.append(Token(TYPE_POW, pos_start=self.pos))
                 self.advance()
-            elif self.current_char == '=': # Assignment operator #TODO: Change this to accept ← or <-
-                tokens.append(Token(TYPE_EQ, pos_start=self.pos))
-                self.advance()
             elif self.current_char == '(':
                 tokens.append(Token(TYPE_LPAREN, pos_start=self.pos))
                 self.advance()
             elif self.current_char == ')':
                 tokens.append(Token(TYPE_RPAREN, pos_start=self.pos))
                 self.advance()
+            elif self.current_char == '!': 
+                token, error = self.make_not_equals()
+                if error: return [], error
+                tokens.append(token)
+            elif self.current_char == '=': #TODO: Change this to accept ← or <- for assignment operator
+                tokens.append(self.make_equals())
+                if error: return [], error
+                tokens.append(token)
             else: 
                 pos_start = self.pos.copy()
                 char = self.current_char
@@ -209,6 +227,50 @@ class Lexer:
 
         token_type = TYPE_KEYWORD if id_str in KEYWORDS else TYPE_IDENTIFIER
         return Token(token_type, id_str, pos_start=pos_start, pos_end=self.pos)
+    
+    def make_not_equals(self): 
+        pos_start = self.pos.copy()
+        self.advance()
+
+        if self.current_char == '=': 
+            self.advance()
+            return Token(TYPE_NE, pos_start=pos_start, pos_end=self.pos), None
+        
+        self.advance()
+        return None, ExpectedCharacterError(pos_start, self.pos, "'=' (after '!')")
+    
+    def make_equals(self): 
+        token_type = TYPE_EQ
+        pos_start = self.pos.copy()
+        self.advance()
+
+        if self.current_char == '=': 
+            self.advance()
+            token_type = TYPE_EE
+
+        return Token(token_type, pos_start=pos_start, pos_end=self.pos), None
+    
+    def make_less_than(self): 
+        token_type = TYPE_LT
+        pos_start = self.pos.copy()
+        self.advance()
+
+        if self.current_char == '=': 
+            self.advance()
+            token_type = TYPE_LTE
+
+        return Token(token_type, pos_start=pos_start, pos_end=self.pos), None
+    
+    def make_greater_than(self): 
+        token_type = TYPE_GT
+        pos_start = self.pos.copy()
+        self.advance()
+
+        if self.current_char == '=': 
+            self.advance()
+            token_type = TYPE_GTE
+
+        return Token(token_type, pos_start=pos_start, pos_end=self.pos), None
         
 # Nodes for PEMDAS operations tree
 
