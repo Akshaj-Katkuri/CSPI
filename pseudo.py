@@ -101,7 +101,8 @@ KEYWORDS = [
     'VAR', 
     'AND', 
     'OR', 
-    'NOT'
+    'NOT', 
+    'MOD'
 ]
 
 class Token(): 
@@ -166,6 +167,9 @@ class Lexer:
                     self.advance()
             elif self.current_char == '/':
                 tokens.append(Token(TYPE_DIV, pos_start=self.pos))
+                self.advance()
+            elif self.current_char == '%': 
+                tokens.append(Token(TYPE_KEYWORD, 'MOD', pos_start=self.pos))
                 self.advance()
             elif self.current_char == '^':
                 tokens.append(Token(TYPE_POW, pos_start=self.pos))
@@ -425,7 +429,7 @@ class Parser:
         return self.power()
 
     def term(self): 
-        return self.binary_operation(self.factor, (TYPE_DIV, TYPE_MUL))
+        return self.binary_operation(self.factor, (TYPE_DIV, TYPE_MUL, (TYPE_KEYWORD, 'MOD')))
     
     def arith_expr(self): 
         return self.binary_operation(self.term, (TYPE_PLUS, TYPE_MINUS))
@@ -570,6 +574,12 @@ class Number:
                 return None, RunTimeError(other.pos_start, other.pos_end, "Division by zero", self.context)
             return Number(self.value / other.value).set_context(self.context), None
         
+    def mod_by(self, other): 
+        if isinstance(other, Number): 
+            if other.value == 0: 
+                return None, RunTimeError(other.pos_start, other.pos_end, "Division by zero", self.context)
+            return Number(self.value % other.value).set_context(self.context), None
+        
     def power_by(self, other): 
         if isinstance(other, Number):
             return Number(self.value ** other.value).set_context(self.context), None
@@ -696,6 +706,8 @@ class Interpreter:
             result, error = left.multiply_by(right)
         elif node.operator_token.type == TYPE_DIV:
             result, error = left.divide_by(right)
+        elif node.operator_token.matches(TYPE_KEYWORD, 'MOD'): 
+            result, error = left.mod_by(right)
         elif node.operator_token.type == TYPE_POW:
             result, error = left.power_by(right)
         elif node.operator_token.type == TYPE_EE: 
