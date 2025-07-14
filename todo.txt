@@ -8,3 +8,6 @@ Types:
  - Add boolean Types
  - Support for boolean types with logical operators
  - Change default symbol tables for 'TRUE' and 'FALSE' to boolean instead of Number object
+
+If statements: 
+ - Change the syntax to have curly braces to wrap expressions and remove 'THEN' keyword

@@ -102,7 +102,12 @@ KEYWORDS = [
     'AND', 
     'OR', 
     'NOT', 
-    'MOD'
+    'MOD', 
+    'IF', 
+    'THEN',
+    'ELIF',
+    'ELSE',
+    'THEN'
 ]
 
 class Token(): 
@@ -333,6 +338,14 @@ class UnaryOperatorNode:
 
     def __repr__(self):
         return f'({self.operator_token}, {self.node})'
+    
+class IfNode: 
+    def __init__(self, cases, else_case): 
+        self.cases = cases
+        self.else_case = else_case
+
+        self.pos_start = self.cases[0][0].pos_start
+        self.pos_end = (self.else_case or self.cases[-1][0]).pos_end
 
 class ParseResult: 
     def __init__(self):
@@ -382,6 +395,65 @@ class Parser:
             ))
         return result
     
+    def if_expr(self): 
+        result = ParseResult()
+        cases = []
+        else_case = None
+
+        if not self.current_token.matches(TYPE_KEYWORD, 'IF'): 
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected 'IF'"
+            ))
+        
+        result.register_advancement()
+        self.advance()
+
+        condition = result.register(self.expr())
+        if result.error: return result
+
+        if not self.current_token.matches(TYPE_KEYWORD, 'THEN'): 
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected 'THEN'"
+            ))
+        
+        result.register_advancement()
+        self.advance()
+
+        expr = result.register(self.expr())
+        if result.error: return result
+        cases.append((condition, expr))
+
+        while self.current_token.matches(TYPE_KEYWORD, 'ELIF'): 
+            result.register_advancement()
+            self.advance()
+
+            condition = result.register(self.expr())
+            if result.error: return result
+
+            if not self.current_token.matches(TYPE_KEYWORD, 'THEN'):
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end, 
+                    "Expected 'THEN'"
+                ))
+            
+            result.register_advancement()
+            self.advance()
+            
+            expr = result.register(self.expr())
+            if result.error: return result
+            cases.append((condition, expr))
+
+        if self.current_token.matches(TYPE_KEYWORD, 'ELSE'): 
+            result.register_advancement()
+            self.advance()
+
+            else_case = result.register(self.expr())
+            if result.error: return result
+
+        return result.success(IfNode(cases, else_case))
+    
     def atom(self): 
         result = ParseResult()
         token = self.current_token
@@ -409,6 +481,12 @@ class Parser:
                 return result.failure(InvalidSyntaxError(
                     self.current_token.pos_start, self.current_token.pos_end, "Expected ')'"
                 ))
+            
+        elif token.matches(TYPE_KEYWORD, 'IF'): 
+            if_expr = result.register(self.if_expr())
+            if result.error: 
+                return result
+            return result.success(if_expr)
             
         return result.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, '+', '-', or '('"))
     
@@ -624,6 +702,9 @@ class Number:
         copy.set_position(self.pos_start, self.pos_end)
         copy.set_context(self.context)
         return copy
+    
+    def is_true(self): 
+        return self.value != 0
         
     def __repr__(self):
         return str(self.value)
@@ -748,6 +829,25 @@ class Interpreter:
             return RTresult.failure(error)
         else: 
             return RTresult.success(number.set_position(node.pos_start, node.pos_end))
+        
+    def visit_IfNode(self, node: IfNode, context: Context): 
+        result = RunTimeResult()
+
+        for condition, expr in node.cases: 
+            condition_value: Number = result.register(self.visit(condition, context))
+            if result.error: return result
+
+            if condition_value.is_true(): 
+                expr_value = result.register(self.visit(expr, context))
+                if result.error: return result
+                return result.success(expr_value)
+        
+        if node.else_case: 
+            else_value = result.register(self.visit(node.else_case, context))
+            if result.error: return result
+            return result.success(else_value)
+        
+        return result.success(None)
 
 global_symbol_table = SymbolTable()
 global_symbol_table.set("NULL", Number(0))
