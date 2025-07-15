@@ -11,3 +11,10 @@ Types:
 
 If statements: 
  - Change the syntax to have curly braces to wrap expressions and remove 'THEN' keyword
+
+REPEAT-loop: 
+ - Add Repeat n times feature
+ - Add Repeat until loop
+
+WHILE and FOR loops: 
+ - Change while and for loops' syntax to correct syntax
