@@ -353,7 +353,7 @@ class IfNode:
 
 class ForNode: 
     def __init__(self, var_name_token, start_value_node, end_value_node, step_value_node, body_node): 
-        self.var_name_token = var_name_token
+        self.var_name_token: Token = var_name_token
         self.start_value_node = start_value_node
         self.end_value_node = end_value_node
         self.step_value_node = step_value_node
@@ -531,9 +531,6 @@ class Parser:
             if result.error: return result
         else: 
             step_node = None
-
-            result.register_advancement()
-            self.advance()
 
         if not self.current_token.matches(TYPE_KEYWORD, 'THEN'):
             return result.failure(InvalidSyntaxError(
@@ -985,6 +982,53 @@ class Interpreter:
             return result.success(else_value)
         
         return result.success(None)
+    
+    def visit_ForNode(self, node: ForNode, context: Context): 
+        result = RunTimeResult()
+
+        start_value: Number = result.register(self.visit(node.start_value_node, context))
+        if result.error: return result
+
+        end_value: Number = result.register(self.visit(node.end_value_node, context))
+        if result.error: return result
+
+        if node.step_value_node: 
+            step_value: Number = result.register(self.visit(node.step_value_node, context))
+            if result.error: return result
+        else: 
+            step_value = Number(1)
+        
+        i = start_value.value
+
+        if step_value.value >= 0: 
+            condition = lambda: i < end_value.value
+        else: 
+            condition = lambda: i > end_value.value
+
+        while condition(): 
+            context.symbol_table.set(node.var_name_token.value, Number(i))
+            i += step_value.value
+
+            result.register(self.visit(node.body_node, context))
+            if result.error: return result
+
+        return result.success(None)
+    
+    def visit_WhileNode(self, node: WhileNode, context: Context): 
+        result = RunTimeResult()
+
+        condition_value: Number = result.register(self.visit(node.condition_node, context)) #TODO: Change this to boolean node once made
+        if result.error: return result
+
+        while condition_value.is_true(): 
+            result.register(self.visit(node.body_node, context))
+            if result.error: return result
+
+            condition_value: Number = result.register(self.visit(node.condition_node, context))
+            if result.error: return result
+
+        return result.success(None)
+
 
 global_symbol_table = SymbolTable()
 global_symbol_table.set("NULL", Number(0))
