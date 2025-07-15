@@ -622,7 +622,7 @@ class Parser:
             if result.error: return result
             return result.success(while_expr)
             
-        return result.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, '+', '-', or '('"))
+        return result.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, or '('"))
     
     def power(self): 
         return self.binary_operation(self.atom, (TYPE_POW, ), self.factor)
