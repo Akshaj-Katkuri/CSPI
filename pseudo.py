@@ -1336,6 +1336,35 @@ class Interpreter:
             if result.error: return result
 
         return result.success(None)
+    
+    def visit_FunctionDefinitionNode(self, node: FunctionDefinitionNode, context: Context):
+        result = RunTimeResult()
+
+        func_name = node.var_name_token.value
+        body_node = node.body_node
+        arg_names = [arg_name.value for arg_name in node.arg_name_tokens]
+        func_value = Function(func_name, body_node, arg_names).set_context(context).set_pos(node.pos_start, node.pos_end)
+        
+        if node.var_name_token: #TODO: could prob remove this later after requiring function name
+            context.symbol_table.set(func_name, func_value)
+
+        return result.success(func_value)
+    
+    def visit_CallNode(self, node: CallNode, context: Context): 
+        result = RunTimeResult()
+        args = []
+
+        value_to_call: Value = result.register(self.visit(node.node_to_call, context))
+        if result.error: return result
+        value_to_call: Value = value_to_call.copy().set_pos(node.pos_start, node.pos_end)
+
+        for arg_node in node.arg_nodes:
+            args.append(result.register(self.visit(arg_node, context)))
+            if result.error: return result
+
+        return_value = result.register(value_to_call.execute(args))
+        if result.error: return result
+        return result.success(return_value)
 
 
 global_symbol_table = SymbolTable()
