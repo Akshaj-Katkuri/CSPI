@@ -980,6 +980,9 @@ class Value:
     def notted(self): 
         return None, self.illegal_operation()
     
+    def execute(self): 
+        return RunTimeResult().failure(self.illegal_operation())
+    
     def copy(self): 
         raise Exception('No copy method defined')
     
@@ -1145,7 +1148,7 @@ class Function(Value):
         return copy
     
     def __repr__(self):
-        return f'Function({self.name}, {self.arg_names})'
+        return f'<function {self.name}>'
 
 class Context: 
     def __init__(self, display_name, parent=None, parent_entry_pos: Position = None):
