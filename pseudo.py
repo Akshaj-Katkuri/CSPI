@@ -424,6 +424,7 @@ class ParseResult:
         self.advance_count += 1
 
     def register(self, result): 
+        print(result)
         self.advance_count += result.advance_count
         if result.error: self.error = result.error
         return result.node
@@ -627,7 +628,7 @@ class Parser:
         result = ParseResult()
 
         if not self.current_token.matches(TYPE_KEYWORD, 'FUN'): 
-            result.failure(InvalidSyntaxError(
+            return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
                 "Expected 'FUN'"
             ))
@@ -750,9 +751,11 @@ class Parser:
             return result.success(while_expr)
         
         elif token.matches(TYPE_KEYWORD, 'FUN'): 
-            func_def = result.register(self.func_def)
+            func_def = result.register(self.func_def())
+            if result.error: return result
+            return result.success(func_def)
             
-        return result.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, or '('"))
+        return result.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, '(', 'IF', 'FOR', 'WHILE', 'FUN'"))
     
     def call(self): 
         result = ParseResult()
@@ -882,7 +885,7 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end,
-                "Expected 'VAR', int, float, identifier, '+', '-', or '('" #TODO: change this error to have keywords
+                "Expected 'VAR', 'IF', 'WHILE', FOR', 'FUN', int, float, identifier, '+', '-', or '('" #TODO: change this error to have keywords
             ))
         
         return result.success(node)
@@ -1095,7 +1098,7 @@ class Number(Value):
         
     def copy(self): 
         copy = Number(self.value)
-        copy.set_position(self.pos_start, self.pos_end)
+        copy.set_pos(self.pos_start, self.pos_end)
         copy.set_context(self.context)
         return copy
     
@@ -1158,9 +1161,9 @@ class Context:
         self.symbol_table: SymbolTable = None
 
 class SymbolTable:
-    def __init__(self):
+    def __init__(self, parent=None):
         self.symbols = {}
-        self.parent: SymbolTable = None
+        self.parent: SymbolTable = parent
 
     def get(self, name) -> Number: #for now only return's number 
         value = self.symbols.get(name, None)
@@ -1187,7 +1190,7 @@ class Interpreter:
     
     def visit_NumberNode(self, node: NumberNode, context: Context):
         return RunTimeResult().success(
-            Number(node.token.value).set_context(context).set_position(node.token.pos_start, node.token.pos_end)
+            Number(node.token.value).set_context(context).set_pos(node.token.pos_start, node.token.pos_end)
             )
     
     def visit_VariableAccessNode(self, node: VariableAccessNode, context: Context): 
@@ -1202,7 +1205,7 @@ class Interpreter:
                 context
             ))
         
-        value = value.copy().set_position(node.pos_start, node.pos_end)
+        value = value.copy().set_pos(node.pos_start, node.pos_end)
         return RTresult.success(value)
     
     def visit_VariableAssignNode(self, node: VariableAssignNode, context: Context):
@@ -1253,7 +1256,7 @@ class Interpreter:
         if error: 
             return RTresult.failure(error)
         else: 
-            return RTresult.success(result.set_position(node.pos_start, node.pos_end))
+            return RTresult.success(result.set_pos(node.pos_start, node.pos_end))
 
     def visit_UnaryOperatorNode(self, node: UnaryOperatorNode, context: Context):
         RTresult = RunTimeResult()
@@ -1270,7 +1273,7 @@ class Interpreter:
         if error:
             return RTresult.failure(error)
         else: 
-            return RTresult.success(number.set_position(node.pos_start, node.pos_end))
+            return RTresult.success(number.set_pos(node.pos_start, node.pos_end))
         
     def visit_IfNode(self, node: IfNode, context: Context): 
         result = RunTimeResult()
@@ -1340,7 +1343,7 @@ class Interpreter:
     def visit_FunctionDefinitionNode(self, node: FunctionDefinitionNode, context: Context):
         result = RunTimeResult()
 
-        func_name = node.var_name_token.value
+        func_name = node.var_name_token.value if node.var_name_token else None #TODO: Shouldn't need this if condition later
         body_node = node.body_node
         arg_names = [arg_name.value for arg_name in node.arg_name_tokens]
         func_value = Function(func_name, body_node, arg_names).set_context(context).set_pos(node.pos_start, node.pos_end)
