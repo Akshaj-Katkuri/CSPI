@@ -350,6 +350,16 @@ class NumberNode:
     def __repr__(self):
         return f'{self.token}'
     
+class StringNode:
+    def __init__(self, token: Token):
+        self.token = token
+
+        self.pos_start = token.pos_start
+        self.pos_end = token.pos_end
+
+    def __repr__(self):
+        return f'{self.token}'
+    
 class VariableAccessNode:
     def __init__(self, var_name_token: Token):
         self.var_name_token = var_name_token
@@ -742,6 +752,11 @@ class Parser:
             result.register_advancement()
             self.advance()
             return result.success(NumberNode(token))
+        
+        if token.type == TYPE_STRING: 
+            result.register_advancement()
+            self.advance()
+            return result.success(StringNode(token))
         
         elif token.type == TYPE_IDENTIFIER:
             result.register_advancement()
