@@ -25,3 +25,6 @@ Lexer:
 Function: 
  - Change function syntax to make Identifier necessary. 
  - Change 
+
+String: 
+ - Fix \ from breaking everything
