@@ -18,3 +18,10 @@ REPEAT-loop:
 
 WHILE and FOR loops: 
  - Change while and for loops' syntax to correct syntax
+
+Lexer: 
+ - Change lexing process to how POW is done for all comparisn operators. 
+
+Function: 
+ - Change function syntax to make Identifier necessary. 
+ - Change 

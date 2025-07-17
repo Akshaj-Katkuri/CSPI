@@ -95,6 +95,8 @@ TYPE_LT = 'LT' # <
 TYPE_GT = 'GT' # >
 TYPE_LTE = 'LTE' # <=  
 TYPE_GTE = 'GTE' # >=
+TYPE_COMMA = 'COMMA'
+TYPE_ARROW = 'ARROW'
 TYPE_EOF = 'EOF'
 
 KEYWORDS = [
@@ -111,7 +113,8 @@ KEYWORDS = [
     'FOR', 
     'STEP',
     'WHILE',
-    'TO'
+    'TO',
+    'FUN' #TODO: Change this to "PROCEDURE"
 ]
 
 class Token(): 
@@ -164,13 +167,13 @@ class Lexer:
                 tokens.append(Token(TYPE_PLUS, pos_start=self.pos))
                 self.advance()
             elif self.current_char == '-': 
-                tokens.append(Token(TYPE_MINUS, pos_start=self.pos))
-                self.advance()
+                tokens.append(self.make_minus_or_arrow()) #TODO: Change this to similar implementation as POW
             elif self.current_char == '*':
                 if self.get_next_char() == '*':
-                    tokens.append(Token(TYPE_POW, '**', pos_start=self.pos))
+                    pos_start = self.pos.copy()
                     self.advance()
                     self.advance()
+                    tokens.append(Token(TYPE_POW, '**', pos_start=pos_start, pos_end=self.pos)) #TODO: Verify this pos for end and start
                 else: 
                     tokens.append(Token(TYPE_MUL, pos_start=self.pos))
                     self.advance()
@@ -205,6 +208,9 @@ class Lexer:
                 token, error = self.make_greater_than()
                 if error: return [], error
                 tokens.append(token)
+            elif self.current_char == ',': 
+                tokens.append(Token(TYPE_COMMA, pos_start=self.pos))
+                self.advance()
             else: 
                 pos_start = self.pos.copy()
                 char = self.current_char
@@ -248,6 +254,17 @@ class Lexer:
 
         token_type = TYPE_KEYWORD if id_str in KEYWORDS else TYPE_IDENTIFIER
         return Token(token_type, id_str, pos_start=pos_start, pos_end=self.pos)
+    
+    def make_minus_or_arrow(self): 
+        token_type = TYPE_MINUS
+        pos_start = self.pos.copy()
+        self.advance()
+
+        if self.current_char == '>': 
+            self.advance()
+            token_type = TYPE_ARROW
+
+        return Token(token_type, pos_start=pos_start, pos_end=self.pos)
     
     def make_not_equals(self): 
         pos_start = self.pos.copy()
@@ -369,6 +386,33 @@ class WhileNode:
 
         self.pos_start = condition_node.pos_start
         self.pos_end = body_node.pos_end
+
+class FunctionDefinitionNode: 
+    def __init__(self, var_name_token: Token, arg_name_tokens: list[Token], body_node): #TODO: Double check these typings
+        self.var_name_token = var_name_token
+        self.arg_name_tokens = arg_name_tokens
+        self.body_node = body_node
+
+        if self.var_name_token: 
+            self.pos_start = self.var_name_token.pos_start
+        elif len(self.arg_name_tokens) > 0: 
+            self.pos_start = self.arg_name_tokens[0].pos_start
+        else: 
+            self.pos_start = self.body_node.pos_start
+
+        self.pos_end = self.body_node.pos_end
+
+class CallNode: 
+    def __init__(self, node_to_call, arg_nodes):
+        self.node_to_call = node_to_call
+        self.arg_nodes = arg_nodes
+
+        self.pos_start = self.node_to_call.pos_start
+
+        if len(self.arg_nodes) > 0: 
+            self.pos_end = self.arg_nodes[len(self.arg_nodes) - 1].pos_end #TODO: Change this to [-1] if same thing
+        else: 
+            self.pos_end = self.node_to_call.pos_end
 
 class ParseResult: 
     def __init__(self):
@@ -579,6 +623,89 @@ class Parser:
             condition, body
         ))
     
+    def func_def(self): 
+        result = ParseResult()
+
+        if not self.current_token.matches(TYPE_KEYWORD, 'FUN'): 
+            result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected 'FUN'"
+            ))
+
+        result.register_advancement()
+        self.advance()
+
+        if self.current_token.type == TYPE_IDENTIFIER: 
+            var_name_token: Token = self.current_token
+            result.register_advancement()
+            self.advance()
+            if self.current_token.type != TYPE_LPAREN:
+                return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected '('"
+            ))
+        else: 
+            var_name_token = None #TODO: Raise error and remove the error message part
+            if self.current_token.type != TYPE_LPAREN: 
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end, 
+                    "Expected identifier or '('"
+                ))
+
+        result.register_advancement()
+        self.advance()
+        arg_name_tokens = []
+
+        if self.current_token.type == TYPE_IDENTIFIER: 
+            arg_name_tokens.append(self.current_token)
+            result.register_advancement()
+            self.advance()
+
+            while self.current_token.type == TYPE_COMMA: 
+                result.register_advancement
+                self.advance()
+
+                if self.current_token.type != TYPE_IDENTIFIER: 
+                    return result.failure(InvalidSyntaxError(
+                        self.current_token.pos_start, self.current_token.pos_end, 
+                        "Espected identifier"
+                    ))
+                
+                arg_name_tokens.append(self.current_token)
+                result.register_advancement()
+                self.advance()
+        
+            if self.current_token.type != TYPE_RPAREN: 
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end,
+                    "Expected ',' or ')"
+                ))
+        else: 
+            if self.current_token.type != TYPE_RPAREN: 
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end,
+                    "Expected identifier or ')"
+                ))
+            
+        result.register_advancement()
+        self.advance()
+
+        if self.current_token.type != TYPE_ARROW: 
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end,
+                "Expected '->'"
+            ))
+        
+        result.register_advancement()
+        self.advance()
+
+        body_node = result.register(self.expr())
+        if result.error: return result
+
+        return result.success(FunctionDefinitionNode(
+            var_name_token=var_name_token, arg_name_tokens=arg_name_tokens, body_node=body_node
+        ))
+    
     def atom(self): 
         result = ParseResult()
         token = self.current_token
@@ -621,11 +748,52 @@ class Parser:
             while_expr = result.register(self.while_expr())
             if result.error: return result
             return result.success(while_expr)
+        
+        elif token.matches(TYPE_KEYWORD, 'FUN'): 
+            func_def = result.register(self.func_def)
             
         return result.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, or '('"))
     
+    def call(self): 
+        result = ParseResult()
+        atom = result.register(self.atom())
+        if result.error: return result
+
+        if self.current_token.type == TYPE_LPAREN: 
+            result.register_advancement()
+            self.advance()
+            arg_nodes = []
+
+            if self.current_token.type == TYPE_RPAREN: 
+                result.register_advancement()
+                self.advance()
+            else: 
+                arg_nodes.append(result.register(self.expr()))
+                if result.error: 
+                    return result.failure(InvalidSyntaxError(
+                        "Expected ')', 'VAR', int, float, identifier, '+', '-', or '('" #TODO: change this error to have keywords. don't copy paste cus this also has ')' in the beginning. 
+                    ))
+                
+                while self.current_token.type == TYPE_COMMA: 
+                    result.register_advancement()
+                    self.advance()
+
+                    arg_nodes.append(result.register(self.expr()))
+                    if result.error: return result
+
+                if self.current_token.type != TYPE_RPAREN: 
+                    return result.failure(InvalidSyntaxError(
+                        self.current_token.pos_start, self.current_token.pos_end, 
+                        "Expected ',' or ')'"
+                    ))
+                
+                result.register_advancement()
+                self.advance()
+            return result.success(CallNode(node_to_call=atom, arg_node=arg_nodes))
+        return result.success(atom)
+    
     def power(self): 
-        return self.binary_operation(self.atom, (TYPE_POW, ), self.factor)
+        return self.binary_operation(self.call, (TYPE_POW, ), self.factor)
     
     def factor(self): 
         result = ParseResult()
@@ -714,7 +882,7 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end,
-                "Expected 'VAR', int, float, identifier, '+', '-', or '('"
+                "Expected 'VAR', int, float, identifier, '+', '-', or '('" #TODO: change this error to have keywords
             ))
         
         return result.success(node)
@@ -753,13 +921,12 @@ class RunTimeResult:
         self.error = error
         return self
 
-class Number: 
-    def __init__(self, value):
-        self.value = value
-        self.set_position()
+class Value:
+    def __init__(self):
+        self.set_pos()
         self.set_context()
 
-    def set_position(self, pos_start: Position = None, pos_end: Position = None):
+    def set_pos(self, pos_start: Position = None, pos_end: Position = None):
         self.pos_start = pos_start
         self.pos_end = pos_end
         return self
@@ -769,64 +936,156 @@ class Number:
         return self
     
     def added_to(self, other): 
+        return None, self.illegal_operation(other)
+        
+    def subract_by(self, other): 
+        return None, self.illegal_operation(other)
+        
+    def multiply_by(self, other):
+        return None, self.illegal_operation(other)
+        
+    def divide_by(self, other):
+       return None, self.illegal_operation(other)
+        
+    def mod_by(self, other): 
+       return None, self.illegal_operation(other)
+        
+    def power_by(self, other): 
+        return None, self.illegal_operation(other)
+        
+    def get_comparison_eq(self, other):
+        return None, self.illegal_operation(other)
+        
+    def get_comparison_ne(self, other):
+        return None, self.illegal_operation(other)
+        
+    def get_comparison_lt(self, other):
+        return None, self.illegal_operation(other)
+        
+    def get_comparison_gt(self, other):
+        return None, self.illegal_operation(other)
+        
+    def get_comparison_lte(self, other):
+        return None, self.illegal_operation(other)
+        
+    def get_comparison_gte(self, other):
+        return None, self.illegal_operation(other)
+        
+    def and_by(self, other):
+        return None, self.illegal_operation(other)
+        
+    def or_by(self, other): 
+        return None, self.illegal_operation(other)
+        
+    def notted(self): 
+        return None, self.illegal_operation()
+    
+    def copy(self): 
+        raise Exception('No copy method defined')
+    
+    def is_true(self): 
+        return False
+    
+    def illegal_operation(self, other=None):
+        if not other: other = self
+        return RuntimeError(
+            self.pos_start, self.pos_end,
+            'Illegal operation',
+            self.context
+        )
+
+class Number(Value): 
+    def __init__(self, value):
+        super().__init__()
+        self.value = value
+    
+    def added_to(self, other): 
         if isinstance(other, Number):
-            return Number(self.value + other.value).set_context(self.context), None
+            return Number(self.value + other.value).set_context(self.context), 
+        else: 
+            return None, Value.illegal_operation(self.pos_start, other.pos_end)
         
     def subract_by(self, other): 
         if isinstance(other, Number):
-            return Number(self.value - other.value).set_context(self.context), None
+            return Number(self.value - other.value).set_context(self.context), 
+        else: 
+            return None, Value.illegal_operation(self.pos_start, other.pos_end)
         
     def multiply_by(self, other):
         if isinstance(other, Number):
-            return Number(self.value * other.value).set_context(self.context), None
+            return Number(self.value * other.value).set_context(self.context), 
+        else: 
+            return None, Value.illegal_operation(self.pos_start, other.pos_end)
         
     def divide_by(self, other):
         if isinstance(other, Number):
             if other.value == 0:
                 return None, RunTimeError(other.pos_start, other.pos_end, "Division by zero", self.context)
             return Number(self.value / other.value).set_context(self.context), None
+        else: 
+            return None, Value.illegal_operation(self.pos_start, other.pos_end)
         
     def mod_by(self, other): 
         if isinstance(other, Number): 
             if other.value == 0: 
                 return None, RunTimeError(other.pos_start, other.pos_end, "Division by zero", self.context)
             return Number(self.value % other.value).set_context(self.context), None
+        else: 
+            return None, Value.illegal_operation(self.pos_start, other.pos_end)
         
     def power_by(self, other): 
         if isinstance(other, Number):
             return Number(self.value ** other.value).set_context(self.context), None
-        
+        else: 
+            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+
     def get_comparison_eq(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value == other.value)).set_context(self.context), None
+            return Number(int(self.value == other.value)).set_context(self.context), 
+        else: 
+            return None, Value.illegal_operation(self.pos_start, other.pos_end)
         
     def get_comparison_ne(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value != other.value)).set_context(self.context), None
+            return Number(int(self.value != other.value)).set_context(self.context), 
+        else: 
+            return None, Value.illegal_operation(self.pos_start, other.pos_end)
         
     def get_comparison_lt(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value < other.value)).set_context(self.context), None
+            return Number(int(self.value < other.value)).set_context(self.context), 
+        else: 
+            return None, Value.illegal_operation(self.pos_start, other.pos_end)
         
     def get_comparison_gt(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value > other.value)).set_context(self.context), None
+            return Number(int(self.value > other.value)).set_context(self.context), 
+        else: 
+            return None, Value.illegal_operation(self.pos_start, other.pos_end)
         
     def get_comparison_lte(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value <= other.value)).set_context(self.context), None
+            return Number(int(self.value <= other.value)).set_context(self.context), 
+        else: 
+            return None, Value.illegal_operation(self.pos_start, other.pos_end)
         
     def get_comparison_gte(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value >= other.value)).set_context(self.context), None
+            return Number(int(self.value >= other.value)).set_context(self.context), 
+        else: 
+            return None, Value.illegal_operation(self.pos_start, other.pos_end)
         
     def and_by(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value and other.value)).set_context(self.context), None
+            return Number(int(self.value and other.value)).set_context(self.context), 
+        else: 
+            return None, Value.illegal_operation(self.pos_start, other.pos_end)
         
     def or_by(self, other): 
         if isinstance(other, Number): 
-            return Number(int(self.value or other.value)).set_context(self.context), None
+            return Number(int(self.value or other.value)).set_context(self.context), 
+        else: 
+            return None, Value.illegal_operation(self.pos_start, other.pos_end)
         
     def notted(self): 
         return Number(1 if self.value == 0 else 0).set_context(self.context), None
@@ -843,11 +1102,56 @@ class Number:
     def __repr__(self):
         return str(self.value)
 
+class Function(Value):
+    def __init__(self, name, body_node, arg_names):
+        super().__init__()
+        self.name = name or "<anonymous>" #TODO: Error here
+        self.arg_names = arg_names
+        self.body_node = body_node
+
+    def execute(self, args): 
+        result = RunTimeResult()
+        interpreter = Interpreter()
+        new_context = Context(self.name, self.context, self.pos_start)
+        new_context.symbol_table = SymbolTable(new_context.parent.symbol_table)
+
+        if len(args) > len(self.arg_names): 
+            return result.failure(RunTimeError(
+                self.pos_start, self.pos_end, 
+                f"{len(args) - len(self.arg_names)} too many arguments passed into '{self.name}'",
+                self.context
+            ))
+        elif len(args) < len(self.arg_names): 
+            return result.failure(RunTimeError(
+                self.pos_start, self.pos_end, 
+                f"{len(self.arg_names) - len(args)} too few arguments passed into '{self.name}'",
+                self.context
+            ))
+        
+        for i in range(len(args)): 
+            arg_name = self.arg_names[i]
+            arg_value: Value = args[i]
+            arg_value.set_context(new_context)
+            new_context.symbol_table.set(arg_name, arg_value)
+
+        value = result.register(interpreter.visit(self.body_node, new_context))
+        if result.error: return result
+        return result.success(value)
+    
+    def copy(self): 
+        copy = Function(self.name, self.body_node, self.arg_names)
+        copy.set_context(self.context)
+        copy.set_pos(self.pos_start, self.pos_end)
+        return copy
+    
+    def __repr__(self):
+        return f'Function({self.name}, {self.arg_names})'
+
 class Context: 
-    def __init__(self, display_name, parent=None, parent_entry_pos=None):
+    def __init__(self, display_name, parent=None, parent_entry_pos: Position = None):
         self.display_name = display_name
         self.parent = parent
-        self.parent_entry_pos = parent_entry_pos
+        self.parent_entry_pos: Position = parent_entry_pos
         self.symbol_table: SymbolTable = None
 
 class SymbolTable:
@@ -867,6 +1171,7 @@ class SymbolTable:
     def remove(self, name): 
         del self.symbols[name]
 
+#TODO: Make static class, hard challenge
 class Interpreter: 
     def visit(self, node, context: Context) -> RunTimeResult: 
         """ Process the node and visit all the child nodes """
