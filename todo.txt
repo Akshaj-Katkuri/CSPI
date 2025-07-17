@@ -28,3 +28,6 @@ Function:
 
 String: 
  - Fix \ from breaking everything
+
+Structure: 
+ - Break up the big file into smaller pieces, like holy this has horrible organization. 
