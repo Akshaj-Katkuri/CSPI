@@ -79,6 +79,7 @@ class RunTimeError(Error):
 # Token types
 TYPE_INT = 'INT'
 TYPE_FLOAT = 'FLOAT'
+TYPE_STRING = 'STRING'
 TYPE_IDENTIFIER = 'IDENTIFIER' # The variable name
 TYPE_KEYWORD = 'KEYWORD' # Keywords like 'function'
 TYPE_PLUS = 'PLUS'
@@ -163,6 +164,8 @@ class Lexer:
                 tokens.append(self.make_number())
             elif self.current_char.isalpha() or self.current_char == '_': 
                 tokens.append(self.make_identifier())
+            elif self.current_char == '"':
+                tokens.append(self.make_string())
             elif self.current_char == '+': 
                 tokens.append(Token(TYPE_PLUS, pos_start=self.pos))
                 self.advance()
@@ -243,6 +246,31 @@ class Lexer:
             return Token(TYPE_INT, int(num_str), pos_start=pos_start, pos_end=self.pos)
         else: 
             return Token(TYPE_FLOAT, float(num_str), pos_start=pos_start, pos_end=self.pos)
+
+    def make_string(self): 
+        string = ''
+        pos_start = self.pos.copy()
+        escape_character = False
+        self.advance()
+
+        escape_characters = {
+            'n': '\n',
+            't': '\t'
+        }
+
+        while (self.current_char != '"' or escape_character) and self.current_char != None: 
+            if escape_character: 
+                string += escape_characters.get(self.current_char, self.current_char)
+            else:
+                if self.current_char == '\\':
+                    escape_character = True
+                else:
+                    string += self.current_char
+                    self.advance()
+            escape_character = False
+
+        self.advance()
+        return Token(TYPE_STRING, string, pos_start, self.pos)
     
     def make_identifier(self):
         id_str = ''
