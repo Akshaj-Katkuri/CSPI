@@ -90,6 +90,8 @@ TYPE_POW = 'POW'
 TYPE_EQ = 'EQ' # Assignment operator
 TYPE_LPAREN = 'LPAREN'
 TYPE_RPAREN = 'RPAREN'
+TYPE_LSQUARE = 'LSQUARE'
+TYPE_RSQUARE = 'RSQUARE'
 TYPE_EE = 'EE' # ==
 TYPE_NE = 'NE' # !=
 TYPE_LT = 'LT' # <
@@ -194,6 +196,12 @@ class Lexer:
                 self.advance()
             elif self.current_char == ')':
                 tokens.append(Token(TYPE_RPAREN, pos_start=self.pos))
+                self.advance()
+            elif self.current_char == '[':
+                tokens.append(Token(TYPE_LSQUARE, pos_start=self.pos))
+                self.advance()
+            elif self.current_char == ']':
+                tokens.append(Token(TYPE_RSQUARE, pos_start=self.pos))
                 self.advance()
             elif self.current_char == '!': 
                 token, error = self.make_not_equals()
