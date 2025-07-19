@@ -368,6 +368,13 @@ class StringNode:
     def __repr__(self):
         return f'{self.token}'
     
+class ListNode: 
+    def __init__(self, element_nodes, pos_start, pos_end):
+        self.element_nodes = element_nodes
+
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+    
 class VariableAccessNode:
     def __init__(self, var_name_token: Token):
         self.var_name_token = var_name_token
@@ -752,6 +759,51 @@ class Parser:
             var_name_token=var_name_token, arg_name_tokens=arg_name_tokens, body_node=body_node
         ))
     
+    def list_expr(self): 
+        result = ParseResult()
+        start_pos = self.current_token.pos_start.copy()
+        element_nodes = []
+
+        if self.current_token.type != TYPE_LSQUARE: 
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected '['"
+            ))
+        result.register_advancement()
+        self.advance()
+
+        if self.current_token.type == TYPE_RSQUARE:
+            result.register_advancement()
+            self.advance()
+            return result.success(ListNode([], pos_start=start_pos, pos_end=self.current_token.pos_end))
+        
+        element_nodes.append(result.register(self.expr()))
+        if result.error: 
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected ']', 'VAR', int, float, identifier, '+', '-', '[', or '('" #TODO: Add keywords and double check error message if keywords needed
+            ))
+
+        while self.current_token.type == TYPE_COMMA: 
+            result.register_advancement()
+            self.advance()
+
+            element_nodes.append(result.register(self.expr()))
+            if result.error: return result
+
+        if self.current_token.type != TYPE_RSQUARE: 
+            result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected ',' or ']'"
+            ))
+        
+        result.register_advancement()
+        self.advance()
+
+        return result.success(ListNode(
+            element_nodes=element_nodes, pos_start=start_pos, pos_end=self.current_token.pos_end.copy()
+        ))
+    
     def atom(self): 
         result = ParseResult()
         token = self.current_token
@@ -784,6 +836,11 @@ class Parser:
                 return result.failure(InvalidSyntaxError(
                     self.current_token.pos_start, self.current_token.pos_end, "Expected ')'"
                 ))
+        
+        elif token.type == TYPE_LSQUARE: 
+            list_expr = result.register(self.list_expr())
+            if result.error: return result
+            return result.success(list_expr)
             
         elif token.matches(TYPE_KEYWORD, 'IF'): 
             if_expr = result.register(self.if_expr())
@@ -805,7 +862,7 @@ class Parser:
             if result.error: return result
             return result.success(func_def)
             
-        return result.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, '(', 'IF', 'FOR', 'WHILE', 'FUN'"))
+        return result.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, '[', '(', 'IF', 'FOR', 'WHILE', 'FUN'"))
     
     def call(self): 
         result = ParseResult()
@@ -824,7 +881,7 @@ class Parser:
                 arg_nodes.append(result.register(self.expr()))
                 if result.error: 
                     return result.failure(InvalidSyntaxError(
-                        "Expected ')', 'VAR', int, float, identifier, '+', '-', or '('" #TODO: change this error to have keywords. don't copy paste cus this also has ')' in the beginning. 
+                        "Expected ')', 'VAR', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords. don't copy paste cus this also has ')' in the beginning. 
                     ))
                 
                 while self.current_token.type == TYPE_COMMA: 
@@ -884,7 +941,7 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected int, float, identifier, '+', '-', '(', or 'NOT")
+                "Expected int, float, identifier, '+', '-', '(', '[', or 'NOT")
             )
         
         return result.success(node)
@@ -935,7 +992,7 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end,
-                "Expected 'VAR', 'IF', 'WHILE', FOR', 'FUN', int, float, identifier, '+', '-', or '('" #TODO: change this error to have keywords
+                "Expected 'VAR', 'IF', 'WHILE', FOR', 'FUN', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords
             ))
         
         return result.success(node)
