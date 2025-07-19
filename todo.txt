@@ -18,6 +18,7 @@ REPEAT-loop:
 
 WHILE and FOR loops: 
  - Change while and for loops' syntax to correct syntax
+ - Currently FOR and WHILE loops return list by default. Check if we want to change that. 
 
 Lexer: 
  - Change lexing process to how POW is done for all comparisn operators. 
@@ -28,6 +29,14 @@ Function:
 
 String: 
  - Fix \ from breaking everything
+
+List: 
+ - Change list indexing to start from 0 or 1 (check reference sheet)
+ - Concatenate list using + and not *
+ - Remove + and / operators for list
+ - Make * operator multiply list that many times (how python does it)
+ - Change how to get an element from the list
+ - Built in list functions
 
 Structure: 
  - Break up the big file into smaller pieces, like holy this has horrible organization. 
