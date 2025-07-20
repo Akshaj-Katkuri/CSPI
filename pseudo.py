@@ -271,13 +271,16 @@ class Lexer:
         while (self.current_char != '"' or escape_character) and self.current_char != None: 
             if escape_character: 
                 string += escape_characters.get(self.current_char, self.current_char)
+                self.advance()
+                escape_character = False
             else:
                 if self.current_char == '\\':
                     escape_character = True
+                    self.advance()
                 else:
                     string += self.current_char
                     self.advance()
-            escape_character = False
+                    escape_character = False
 
         self.advance()
         return Token(TYPE_STRING, string, pos_start, self.pos)
