@@ -174,7 +174,14 @@ class Lexer:
                 tokens.append(Token(TYPE_PLUS, pos_start=self.pos))
                 self.advance()
             elif self.current_char == '-': 
-                tokens.append(self.make_minus_or_arrow()) #TODO: Change this to similar implementation as POW
+                if self.get_next_char == '>':
+                    pos_start = self.pos.copy()
+                    self.advance()
+                    self.advance()
+                    tokens.append(Token(TYPE_ARROW, '**', pos_start=pos_start, pos_end=self.pos)) #TODO: Verify this pos for end and start
+                else: 
+                    tokens.append(Token(TYPE_MINUS, pos_start=self.pos))
+                    self.advance()
             elif self.current_char == '*':
                 if self.get_next_char() == '*':
                     pos_start = self.pos.copy()
