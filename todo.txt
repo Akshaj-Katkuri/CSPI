@@ -27,9 +27,6 @@ Function:
  - Change function syntax to make Identifier necessary. 
  - Change 
 
-String: 
- - Fix \ from breaking everything
-
 List: 
  - Change list indexing to start from 0 or 1 (check reference sheet)
  - Concatenate list using + and not *
