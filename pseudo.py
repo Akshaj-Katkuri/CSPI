@@ -139,7 +139,9 @@ class Token():
         if self.value: 
             return f"{self.type}:{self.value}"
         return f'{self.type}'
-    
+
+# Lexer
+
 class Lexer: 
     def __init__(self, fn, text):
         self.fn = fn
@@ -1370,6 +1372,7 @@ class SymbolTable:
     def remove(self, name): 
         del self.symbols[name]
 
+# Interpreter
 #TODO: Make static class, hard challenge
 class Interpreter: 
     def visit(self, node, context: Context) -> RunTimeResult: 
