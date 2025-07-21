@@ -37,3 +37,19 @@ List:
 
 Structure: 
  - Break up the big file into smaller pieces, like holy this has horrible organization. 
+
+Built-in Functions: 
+ - PRINT
+ - PRINT_RET
+ - INPUT
+ - INPUT_INT
+ - CLEAR
+ - IS_NUMBER
+ - IS_STRING
+ - IS_LIST
+ - IS_FUNCTION
+ - APPEND
+ - POP
+ - EXTEND
+
+ - Change all these functions so that it matches the CSP reference sheet

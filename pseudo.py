@@ -1,5 +1,7 @@
 from utilities import string_with_arrows
 
+import os
+
 class Position: 
     def __init__(self, idx, ln, col, fn, ftxt):
         self.idx = idx
@@ -1416,6 +1418,40 @@ class BuiltInFunction(BaseFunction):
     
     def __repr__(self): 
         return f"<built-in function {self.name}>"
+    
+    ####### Execute method for all functions #######
+
+    def execute_print(self, exec_context): 
+        print(str(exec_context.symbol_table.get('value')))
+        return RunTimeResult().success(Number.null)
+    execute_print.arg_names = ["value"]
+
+    def execute_print_return(self, exec_context): 
+        return RunTimeResult().success(String(str(exec_context.symbol_table.get('value'))))
+    execute_print_return.arg_names = ["value"]
+
+    def execute_input(self, exec_context): #TODO: Maybe make this fancier with string argument?
+        text = input()
+        return RunTimeResult().success(String(text))
+    execute_input.arg_names = []
+
+    def execute_input_int(self, exec_context): #TODO: Maybe make this fancier with string argument too?
+        text = input()
+        while True:
+            try: 
+                number = int(text)
+                break
+            except ValueError: 
+                print(f"'{text}' mus be an integer. Try again!") #TODO: get rid of this and replace with error too?
+        return RunTimeResult().success(Number(text))
+    execute_input_int.arg_names = []
+
+    def execute_clear(self, exec_context): 
+        os.system('cls' if os.name == 'nt' else 'clear')
+        return RunTimeResult().success(Number.null)
+    execute_clear.arg_names = []
+
+    # 9:37 execute_is_number
 
 class Context: 
     def __init__(self, display_name, parent=None, parent_entry_pos: Position = None):
