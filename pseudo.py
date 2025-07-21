@@ -1227,6 +1227,10 @@ class Number(Value):
     def __repr__(self):
         return str(self.value)
 
+Number.null = Number(0)
+Number.false = Number(0)
+Number.true = Number(1)
+
 class String(Value):
     def __init__(self, value): 
         super().__init__()
@@ -1313,39 +1317,64 @@ class List(Value):
     def __repr__(self):
         return f'[{", ".join([str(x) for x in self.elements])}]' #TODO: Change to print quotes only if string
 
-class Function(Value):
-    def __init__(self, name, body_node, arg_names):
+class BaseFunction(Value): 
+    def __init__(self, name):
         super().__init__()
-        self.name = name or "<anonymous>" #TODO: Error here
+        self.name = name or "<anonymous>" #TODO: prob change this to no anonymous
+
+    def generate_new_context(self): 
+        new_context = Context(self.name, self.context, self.pos_start)
+        new_context.symbol_table = SymbolTable(new_context.parent.symbol_table)
+        return new_context
+    
+    def check_args(self, arg_names, args):
+        result = RunTimeResult()
+
+        if len(args) > len(arg_names): 
+            return result.failure(RunTimeError(
+                self.pos_start, self.pos_end, 
+                f"{len(args) - len(arg_names)} too many arguments passed into '{self.name}'",
+                self.context
+            ))
+        elif len(args) < len(arg_names): 
+            return result.failure(RunTimeError(
+                self.pos_start, self.pos_end, 
+                f"{len(arg_names) - len(args)} too few arguments passed into '{self.name}'",
+                self.context
+            ))
+        
+        return result.success(None)
+    
+    def populate_args(self, arg_names, args, exec_context): 
+        """ Puts all the arguments into a symbol table """
+        for i in range(len(args)): 
+            arg_name = arg_names[i]
+            arg_value: Value = args[i]
+            arg_value.set_context(exec_context)
+            exec_context.symbol_table.set(arg_name, arg_value)
+
+    def check_and_populate_args(self, arg_names, args, exec_context):
+        result = RunTimeResult()
+        result.register(self.check_args(arg_names, args))
+        if result.error: return result
+        self.populate_args(arg_names, args, exec_context)
+        return result.success(None)
+
+class Function(BaseFunction):
+    def __init__(self, name, body_node, arg_names):
+        super().__init__(name)
         self.arg_names = arg_names
         self.body_node = body_node
 
     def execute(self, args): 
         result = RunTimeResult()
         interpreter = Interpreter()
-        new_context = Context(self.name, self.context, self.pos_start)
-        new_context.symbol_table = SymbolTable(new_context.parent.symbol_table)
+        exec_context = self.generate_new_context()
 
-        if len(args) > len(self.arg_names): 
-            return result.failure(RunTimeError(
-                self.pos_start, self.pos_end, 
-                f"{len(args) - len(self.arg_names)} too many arguments passed into '{self.name}'",
-                self.context
-            ))
-        elif len(args) < len(self.arg_names): 
-            return result.failure(RunTimeError(
-                self.pos_start, self.pos_end, 
-                f"{len(self.arg_names) - len(args)} too few arguments passed into '{self.name}'",
-                self.context
-            ))
-        
-        for i in range(len(args)): 
-            arg_name = self.arg_names[i]
-            arg_value: Value = args[i]
-            arg_value.set_context(new_context)
-            new_context.symbol_table.set(arg_name, arg_value)
+        result.register(self.check_and_populate_args(self.arg_names, args, exec_context))
+        if result.error: return result
 
-        value = result.register(interpreter.visit(self.body_node, new_context))
+        value = result.register(interpreter.visit(self.body_node, exec_context))
         if result.error: return result
         return result.success(value)
     
@@ -1357,6 +1386,36 @@ class Function(Value):
     
     def __repr__(self):
         return f'<function {self.name}>'
+
+class BuiltInFunction(BaseFunction): 
+    def __init__(self, name):
+        super().__init__(name)
+
+    def execute(self, args): 
+        result = RunTimeResult()
+        exec_context = self.generate_new_context()
+
+        method_name = f'execute_{self.name}'
+        method = getattr(self, method_name, self.no_visit_method)
+
+        result.register(self.check_and_populate_args(method.arg_names, args, exec_context))
+        if result.error: return result
+
+        return_value = result.register(method(exec_context))
+        if result.error: return result
+        return result.success(return_value)
+
+    def no_visit_method(self, node, context): 
+        raise Exception(f'No execute_{self.name} method defined')
+    
+    def copy(self):
+        copy = BuiltInFunction(self.name)
+        copy.set_context(self.context)
+        copy.set_pos(self.pos_start, self.pos_end)
+        return copy
+    
+    def __repr__(self): 
+        return f"<built-in function {self.name}>"
 
 class Context: 
     def __init__(self, display_name, parent=None, parent_entry_pos: Position = None):
@@ -1600,9 +1659,9 @@ class Interpreter:
 
 
 global_symbol_table = SymbolTable()
-global_symbol_table.set("NULL", Number(0))
-global_symbol_table.set("TRUE", Number(1))
-global_symbol_table.set("FALSE", Number(0))
+global_symbol_table.set("NULL", Number.null)
+global_symbol_table.set("TRUE", Number.true)
+global_symbol_table.set("FALSE", Number.false)
 
 def run(fn, text):
     lexer = Lexer(fn, text)
