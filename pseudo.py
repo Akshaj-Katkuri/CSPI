@@ -1259,6 +1259,9 @@ class String(Value):
         copy.set_context(self.context)
         return copy
     
+    def __str__(self): 
+        return self.value
+
     def __repr__(self):
         return f'"{self.value}"'
 
@@ -1311,11 +1314,14 @@ class List(Value):
             return None, Value.illegal_operation(self, other)
     
     def copy(self): 
-        copy = List(self.elements[:])
+        copy = List(self.elements)
         copy.set_pos(self.pos_start, self.pos_end)
         copy.set_context(self.context)
         return copy
     
+    def __str__(self): 
+        return ", ".join([str(x) for x in self.elements]) #TODO: Remove this maybe
+
     def __repr__(self):
         return f'[{", ".join([str(x) for x in self.elements])}]' #TODO: Change to print quotes only if string
 
@@ -1436,8 +1442,8 @@ class BuiltInFunction(BaseFunction):
     execute_input.arg_names = []
 
     def execute_input_int(self, exec_context): #TODO: Maybe make this fancier with string argument too?
-        text = input()
         while True:
+            text = input()
             try: 
                 number = int(text)
                 break
@@ -1608,7 +1614,7 @@ class Interpreter:
                 context
             ))
         
-        value = value.copy().set_pos(node.pos_start, node.pos_end)
+        value = value.copy().set_pos(node.pos_start, node.pos_end).set_context(context)
         return RTresult.success(value)
     
     def visit_VariableAssignNode(self, node: VariableAssignNode, context: Context):
@@ -1788,12 +1794,13 @@ class Interpreter:
 
         return_value = result.register(value_to_call.execute(args))
         if result.error: return result
+        return_value = return_value.copy().set_pos(node.pos_start, node.pos_end).set_context(context)
         return result.success(return_value)
 
 global_symbol_table = SymbolTable()
 global_symbol_table.set("NULL", Number.null)
 global_symbol_table.set("TRUE", Number.true)
-global_symbol_table.set("FALSE", Number.false)
+global_symbol_table.set("FALSE", Number.false) #TODO: Maybe add pi
 global_symbol_table.set("PRINT", BuiltInFunction.print)
 global_symbol_table.set("PRINT_RET", BuiltInFunction.print_ret)
 global_symbol_table.set("INPUT", BuiltInFunction.input)
