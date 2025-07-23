@@ -102,6 +102,7 @@ TYPE_LTE = 'LTE' # <=
 TYPE_GTE = 'GTE' # >=
 TYPE_COMMA = 'COMMA'
 TYPE_ARROW = 'ARROW'
+TYPE_NEWLINE = 'NEWLINE'
 TYPE_EOF = 'EOF'
 
 KEYWORDS = [
@@ -119,7 +120,8 @@ KEYWORDS = [
     'STEP',
     'WHILE',
     'TO',
-    'FUN' #TODO: Change this to "PROCEDURE"
+    'FUN', #TODO: Change this to "PROCEDURE"
+    'END' 
 ]
 
 class Token(): 
@@ -165,6 +167,9 @@ class Lexer:
 
         while self.current_char != None: 
             if self.current_char in ' \t': 
+                self.advance()
+            elif self.current_char in ';\n':
+                tokens.append(Token(TYPE_NEWLINE, pos_start=self.pos))
                 self.advance()
             elif self.current_char.isdigit(): 
                 tokens.append(self.make_number())
@@ -485,15 +490,24 @@ class ParseResult:
     def __init__(self):
         self.error = None
         self.node = None
+        self.last_registered_advance_count = 0
         self.advance_count = 0
+        self.to_reverse_count = 0
 
     def register_advancement(self): 
         self.advance_count += 1
 
     def register(self, result): 
+        self.last_registered_advance_count = result.advance_count
         self.advance_count += result.advance_count
         if result.error: self.error = result.error
         return result.node
+    
+    def try_register(self, result): 
+        if result.error: 
+            self.to_reverse_count = result.advance_count
+            return None
+        return self.register(result)
 
     def success(self, node): 
         self.node = node
@@ -514,15 +528,23 @@ class Parser:
 
     def advance(self) -> Token: 
         self.token_idx += 1
+        self.update_current_token()
+        return self.current_token
+    
+    def reverse(self, amount=1) -> Token:
+        self.tok_idx -= amount
+        self.update_current_token()
+        return self.current_token
+
+    def update_current_token(self): 
         if self.token_idx < len(self.tokens):
             self.current_token: Token = self.tokens[self.token_idx]
-        return self.current_token
     
     def get_next_token(self) -> Token: 
         return self.tokens[self.token_idx + 1] if self.token_idx + 1 < len(self.tokens) else None
     
     def parse(self): 
-        result = self.expr()
+        result = self.statements()
         if not result.error and self.current_token.type != TYPE_EOF:
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, "Expected '+', '-', '*', or '/'"
@@ -1010,6 +1032,44 @@ class Parser:
             ))
         
         return result.success(node)
+
+    def statements(self): 
+        result = ParseResult()
+        statements = []
+        pos_start = self.current_token.pos_start.copy()
+
+        while self.current_token.type == TYPE_NEWLINE: 
+            result.register_advancement()
+            self.advance()
+
+        statement = result.register(self.expr())
+        if result.error: return result
+        statements.append(statement)
+
+        more_statements = True
+
+        while True: 
+            newline_count = 0
+            while self.current_token.type == TYPE_NEWLINE: 
+                result.register_advancement()
+                self.advance()
+                newline_count += 1
+            if newline_count == 0:
+                more_statements = False
+
+            if not more_statements: break
+            statement = result.try_register(self.expr())
+            if not statement: 
+                self.reverse(result.to_reverse_count)
+                more_statements = False
+                continue
+            statements.append(statement)
+
+        return result.success(ListNode(
+            statements,
+            pos_start,
+            self.current_token.pos_end.copy()
+        ))
     
     def binary_operation(self, func_a, op_tokens, func_b=None) -> ParseResult: 
         result = ParseResult()
