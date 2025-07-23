@@ -438,32 +438,35 @@ class IfNode:
         self.else_case = else_case
 
         self.pos_start = self.cases[0][0].pos_start
-        self.pos_end = (self.else_case or self.cases[-1][0]).pos_end
+        self.pos_end = (self.else_case or self.cases[-1])[0].pos_end
 
 class ForNode: 
-    def __init__(self, var_name_token, start_value_node, end_value_node, step_value_node, body_node): 
+    def __init__(self, var_name_token, start_value_node, end_value_node, step_value_node, body_node, should_return_null): 
         self.var_name_token: Token = var_name_token
         self.start_value_node = start_value_node
         self.end_value_node = end_value_node
         self.step_value_node = step_value_node
         self.body_node = body_node
+        self.should_return_null = should_return_null
 
         self.pos_start = var_name_token.pos_start
         self.pos_end = body_node.pos_end 
 
 class WhileNode:
-    def __init__(self, condition_node, body_node):
+    def __init__(self, condition_node, body_node, should_return_null):
         self.condition_node = condition_node
         self.body_node = body_node
+        self.should_return_null = should_return_null
 
         self.pos_start = condition_node.pos_start
         self.pos_end = body_node.pos_end
 
 class FunctionDefinitionNode: 
-    def __init__(self, var_name_token: Token, arg_name_tokens: list[Token], body_node): #TODO: Double check these typings
+    def __init__(self, var_name_token: Token, arg_name_tokens: list[Token], body_node, should_return_null): #TODO: Double check these typings
         self.var_name_token = var_name_token
         self.arg_name_tokens = arg_name_tokens
         self.body_node = body_node
+        self.should_return_null = should_return_null
 
         if self.var_name_token: 
             self.pos_start = self.var_name_token.pos_start
@@ -724,11 +727,31 @@ class Parser:
         result.register_advancement()
         self.advance()
 
+        if self.current_token.type == TYPE_NEWLINE: 
+            result.register_advancement()
+            self.advance()
+
+            body_node = result.register(self.statements())
+            if result.error: return result
+
+            if not self.current_token.matches(TYPE_KEYWORD, 'END'):
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end, 
+                    "Expected 'END'"
+                ))
+            
+            result.register_advancement()
+            self.advance()
+
+            return result.success(ForNode(
+                var_name, start_node, end_node, step_node, body_node, True
+            ))
+
         body_node = result.register(self.expr())
         if result.error: return result
 
         return result.success(ForNode(
-            var_name, start_node, end_node, step_node, body_node
+            var_name, start_node, end_node, step_node, body_node, False
         ))
 
     def while_expr(self): 
@@ -755,11 +778,31 @@ class Parser:
         result.register_advancement()
         self.advance()
 
+        if self.current_token.type == TYPE_NEWLINE: 
+            result.register_advancement()
+            self.advance()
+
+            body = result.register(self.statements())
+            if result.error: return result
+
+            if not self.current_token.matches(TYPE_KEYWORD, 'END'):
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end, 
+                    "Expected 'END'"
+                ))
+            
+            result.register_advancement()
+            self.advance()
+
+            return result.success(WhileNode(
+                condition, body, True
+            ))
+
         body = result.register(self.expr())
         if result.error: return result
 
         return result.success(WhileNode(
-            condition, body
+            condition, body, False
         ))
     
     def func_def(self): 
@@ -829,21 +872,45 @@ class Parser:
         result.register_advancement()
         self.advance()
 
-        if self.current_token.type != TYPE_ARROW: 
+        if self.current_token.type == TYPE_ARROW: 
+            result.register_advancement()
+            self.advance()
+
+            body_node = result.register(self.expr())
+            if result.error: return result
+
+            return result.success(FunctionDefinitionNode(
+                var_name_token=var_name_token, arg_name_tokens=arg_name_tokens, body_node=body_node, False
+            ))
+        
+        if self.current_token.type != TYPE_NEWLINE:
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected '->' or NEWLINE"
+            ))
+
+        result.register_advancement()
+        self.advance()
+
+        body_node = result.register(self.statements())
+        if result.error: return result
+
+        if not self.current_token.matches(TYPE_KEYWORD, 'END'):
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end,
-                "Expected '->'"
+                "Expected 'END'"
             ))
         
         result.register_advancement()
         self.advance()
 
-        body_node = result.register(self.expr())
-        if result.error: return result
-
         return result.success(FunctionDefinitionNode(
-            var_name_token=var_name_token, arg_name_tokens=arg_name_tokens, body_node=body_node
+            var_name_token=var_name_token,
+            arg_name_tokens=arg_name_tokens,
+            body_node=body_node,
+            True
         ))
+
     
     def list_expr(self): 
         result = ParseResult()
