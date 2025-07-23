@@ -610,7 +610,7 @@ class Parser:
     
     def if_expr(self): 
         result = ParseResult()
-        all_cases = result.register(self.if_expr_cases())
+        all_cases = result.register(self.if_expr_cases('IF'))
         if result.error: return result
         cases, else_cases = all_cases
         return result.success(IfNode(cases, else_cases))
@@ -656,12 +656,12 @@ class Parser:
         if self.current_token.matches(TYPE_KEYWORD, 'ELIF'):
             all_cases = result.register(self.elif_expr())
             if result.error: return result
-            cases, else_cases = all_cases
+            cases, else_case = all_cases
         else: 
             else_case = result.register(self.else_expr())
             if result.error: return result
 
-        return result.success(cases, else_case)
+        return result.success((cases, else_case))
     
     def for_expr(self): 
         result = ParseResult()
@@ -880,7 +880,7 @@ class Parser:
             if result.error: return result
 
             return result.success(FunctionDefinitionNode(
-                var_name_token=var_name_token, arg_name_tokens=arg_name_tokens, body_node=body_node, False
+                var_name_token=var_name_token, arg_name_tokens=arg_name_tokens, body_node=body_node, should_return_null=False
             ))
         
         if self.current_token.type != TYPE_NEWLINE:
@@ -908,7 +908,7 @@ class Parser:
             var_name_token=var_name_token,
             arg_name_tokens=arg_name_tokens,
             body_node=body_node,
-            True
+            should_return_null=True
         ))
 
     
@@ -1546,10 +1546,11 @@ class BaseFunction(Value):
         return result.success(None)
 
 class Function(BaseFunction):
-    def __init__(self, name, body_node, arg_names):
+    def __init__(self, name, body_node, arg_names, should_return_null=None):
         super().__init__(name)
         self.arg_names = arg_names
         self.body_node = body_node
+        self.should_return_null = should_return_null
 
     def execute(self, args): 
         result = RunTimeResult()
@@ -1561,10 +1562,10 @@ class Function(BaseFunction):
 
         value = result.register(interpreter.visit(self.body_node, exec_context))
         if result.error: return result
-        return result.success(value)
+        return result.success(Number.null if self.should_return_null else value)
     
     def copy(self): 
-        copy = Function(self.name, self.body_node, self.arg_names)
+        copy = Function(self.name, self.body_node, self.arg_names, self.should_return_null)
         copy.set_context(self.context)
         copy.set_pos(self.pos_start, self.pos_end)
         return copy
@@ -1876,21 +1877,22 @@ class Interpreter:
     def visit_IfNode(self, node: IfNode, context: Context): 
         result = RunTimeResult()
 
-        for condition, expr in node.cases: 
+        for condition, expr, should_return_null in node.cases: 
             condition_value: Number = result.register(self.visit(condition, context))
             if result.error: return result
 
             if condition_value.is_true(): 
                 expr_value = result.register(self.visit(expr, context))
                 if result.error: return result
-                return result.success(expr_value)
+                return result.success(Number.null if should_return_null else expr_value)
         
         if node.else_case: 
-            else_value = result.register(self.visit(node.else_case, context))
+            expr, should_return_null = node.else_case
+            expr_value = result.register(self.visit(expr, context))
             if result.error: return result
-            return result.success(else_value)
+            return result.success(Number.null if should_return_null else expr_value)
         
-        return result.success(None)
+        return result.success(Number.null)
     
     def visit_ForNode(self, node: ForNode, context: Context): 
         result = RunTimeResult()
@@ -1923,6 +1925,7 @@ class Interpreter:
             if result.error: return result
 
         return result.success(
+            Number.null if node.should_return_null else
             List(elements).set_context(context).set_pos(node.pos_start, node.pos_end)
         )
     
@@ -1941,6 +1944,7 @@ class Interpreter:
             if result.error: return result
 
         return result.success(
+            Number.null if node.should_return_null else
             List(elements).set_context(context).set_pos(node.pos_start, node.pos_end)
         )
     
@@ -1950,7 +1954,7 @@ class Interpreter:
         func_name = node.var_name_token.value if node.var_name_token else None #TODO: Shouldn't need this if condition later
         body_node = node.body_node
         arg_names = [arg_name.value for arg_name in node.arg_name_tokens]
-        func_value = Function(func_name, body_node, arg_names).set_context(context).set_pos(node.pos_start, node.pos_end)
+        func_value = Function(func_name, body_node, arg_names, node.should_return_null).set_context(context).set_pos(node.pos_start, node.pos_end)
         
         if node.var_name_token: #TODO: could prob remove this later after requiring function name
             context.symbol_table.set(func_name, func_value)
