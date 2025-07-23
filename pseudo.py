@@ -551,15 +551,15 @@ class Parser:
             ))
         return result
     
-    def if_expr(self): 
+    def if_expr_cases(self, case_keyword): 
         result = ParseResult()
         cases = []
         else_case = None
 
-        if not self.current_token.matches(TYPE_KEYWORD, 'IF'): 
+        if not self.current_token.matches(TYPE_KEYWORD, case_keyword): 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected 'IF'"
+                f"Expected {case_keyword}"
             ))
         
         result.register_advancement()
@@ -577,38 +577,88 @@ class Parser:
         result.register_advancement()
         self.advance()
 
-        expr = result.register(self.expr())
-        if result.error: return result
-        cases.append((condition, expr))
-
-        while self.current_token.matches(TYPE_KEYWORD, 'ELIF'): 
+        if self.current_token.type == TYPE_NEWLINE: 
             result.register_advancement()
             self.advance()
 
-            condition = result.register(self.expr())
+            statements = result.register(self.statements())
             if result.error: return result
+            cases.append((condition, statements, True))
 
-            if not self.current_token.matches(TYPE_KEYWORD, 'THEN'):
-                return result.failure(InvalidSyntaxError(
-                    self.current_token.pos_start, self.current_token.pos_end, 
-                    "Expected 'THEN'"
-                ))
-            
-            result.register_advancement()
-            self.advance()
-            
+            if self.current_token.matches(TYPE_KEYWORD, 'END'): 
+                result.register_advancement()
+                self.advance()
+            else: 
+                all_cases = result.register(self.elif_or_else_expr())
+                if result.error: return result
+                new_cases, else_case = all_cases
+                cases.extend(new_cases)
+        else: 
             expr = result.register(self.expr())
             if result.error: return result
-            cases.append((condition, expr))
+            cases.append((condition, expr, False))
+
+            all_cases = result.register(self.elif_or_else_expr())
+            if result.error: return result
+            new_cases, else_case = all_cases
+            cases.extend(new_cases)
+
+        return result.success((cases, else_case))
+    
+    def if_expr(self): 
+        result = ParseResult()
+        all_cases = result.register(self.if_expr_cases())
+        if result.error: return result
+        cases, else_cases = all_cases
+        return result.success(IfNode(cases, else_cases))
+    
+    def elif_expr(self): 
+        return self.if_expr_cases('ELIF')
+    
+    def else_expr(self): 
+        result = ParseResult()
+        else_case = None
 
         if self.current_token.matches(TYPE_KEYWORD, 'ELSE'): 
             result.register_advancement()
             self.advance()
 
-            else_case = result.register(self.expr())
+            if self.current_token.type == TYPE_NEWLINE:
+                result.register_advancement()
+                self.advance()
+
+                statements = result.register(self.statements())
+                if result.error: return result
+                else_case = (statements, True)
+
+                if self.current_token.matches(TYPE_KEYWORD, 'END'): 
+                    result.register_advancement()
+                    self.advance()
+                else: 
+                    return result.failure(InvalidSyntaxError(
+                        self.current_token.pos_start, self.current_token.pos_end, 
+                        "Expected 'END'"
+                    ))
+            else: 
+                expr = result.register(self.expr())
+                if result.error: return result
+                else_case = (expr, False)
+
+        return result.success(else_case)
+    
+    def elif_or_else_expr(self): 
+        result = ParseResult()
+        cases, else_case = [], None
+
+        if self.current_token.matches(TYPE_KEYWORD, 'ELIF'):
+            all_cases = result.register(self.elif_expr())
+            if result.error: return result
+            cases, else_cases = all_cases
+        else: 
+            else_case = result.register(self.else_expr())
             if result.error: return result
 
-        return result.success(IfNode(cases, else_case))
+        return result.success(cases, else_case)
     
     def for_expr(self): 
         result = ParseResult()
