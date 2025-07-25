@@ -121,7 +121,10 @@ KEYWORDS = [
     'WHILE',
     'TO',
     'FUN', #TODO: Change this to "PROCEDURE"
-    'END' 
+    'END',
+    'RETURN',
+    'CONTINUE',
+    'BREAK'
 ]
 
 class Token(): 
@@ -489,6 +492,23 @@ class CallNode:
         else: 
             self.pos_end = self.node_to_call.pos_end
 
+class ReturnNode: 
+    def __init__(self, node_to_return, pos_start, pos_end): 
+        self.node_to_return = node_to_return
+        
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+
+class ContinueNode:
+    def __init__(self, pos_start, pos_end):
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+
+class BreakNode:
+    def __init__(self, pos_start, pos_end):
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+
 class ParseResult: 
     def __init__(self):
         self.error = None
@@ -597,7 +617,7 @@ class Parser:
                 new_cases, else_case = all_cases
                 cases.extend(new_cases)
         else: 
-            expr = result.register(self.expr())
+            expr = result.register(self.statement())
             if result.error: return result
             cases.append((condition, expr, False))
 
@@ -643,7 +663,7 @@ class Parser:
                         "Expected 'END'"
                     ))
             else: 
-                expr = result.register(self.expr())
+                expr = result.register(self.statement())
                 if result.error: return result
                 else_case = (expr, False)
 
@@ -747,7 +767,7 @@ class Parser:
                 var_name, start_node, end_node, step_node, body_node, True
             ))
 
-        body_node = result.register(self.expr())
+        body_node = result.register(self.statement())
         if result.error: return result
 
         return result.success(ForNode(
@@ -798,7 +818,7 @@ class Parser:
                 condition, body, True
             ))
 
-        body = result.register(self.expr())
+        body = result.register(self.statement())
         if result.error: return result
 
         return result.success(WhileNode(
@@ -1150,6 +1170,37 @@ class Parser:
         
         return result.success(node)
 
+    def statement(self): 
+        result = ParseResult()
+        pos_start = self.current_token.pos_start.copy()
+
+        if self.current_token.matches(TYPE_KEYWORD, 'RETURN'): 
+            result.register_advancement()
+            self.advance()
+
+            expr = result.try_register(self.expr())
+            if not expr: 
+                self.reverse(result.to_reverse_count)
+            return result.success(ReturnNode(expr, pos_start, self.current_token.pos_end.copy()))
+
+        if self.current_token.matches(TYPE_KEYWORD, 'CONTINUE'): 
+            result.register_advancement()
+            self.advance()
+            return result.success(ContinueNode(pos_start, self.current_token.pos_end.copy()))
+
+        if self.current_token.matches(TYPE_KEYWORD, 'BREAK'):
+            result.register_advancement()
+            self.advance()
+            return result.success(BreakNode(pos_start, self.current_token.pos_end.copy()))
+
+        expr = result.register(self.expr())
+        if result.error: 
+            return result.failure(InvalidSyntaxError(
+                pos_start=pos_start, pos_end=self.current_token.pos_end.copy(),
+                details="Expected 'RETURN', 'CONTINUE', 'BREAK', 'VAR', 'IF', 'WHILE', FOR', 'FUN', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords
+            ))
+        return result.success(expr)
+    
     def statements(self): 
         result = ParseResult()
         statements = []
@@ -1159,7 +1210,7 @@ class Parser:
             result.register_advancement()
             self.advance()
 
-        statement = result.register(self.expr())
+        statement = result.register(self.statement())
         if result.error: return result
         statements.append(statement)
 
@@ -1175,7 +1226,7 @@ class Parser:
                 more_statements = False
 
             if not more_statements: break
-            statement = result.try_register(self.expr())
+            statement = result.try_register(self.statement())
             if not statement: 
                 self.reverse(result.to_reverse_count)
                 more_statements = False
