@@ -555,7 +555,7 @@ class Parser:
         return self.current_token
     
     def reverse(self, amount=1) -> Token:
-        self.tok_idx -= amount
+        self.token_idx -= amount
         self.update_current_token()
         return self.current_token
 
@@ -2081,6 +2081,23 @@ class Interpreter:
         if RTresult.should_return(): return RTresult
         return_value = return_value.copy().set_pos(node.pos_start, node.pos_end).set_context(context)
         return RTresult.success(return_value)
+    
+    def visit_ReturnNode(self, node: ReturnNode, context: Context): 
+        RTresult = RunTimeResult()
+
+        if node.node_to_return: 
+            value = RTresult.register(self.visit(node.node_to_return, context))
+            if RTresult.should_return(): return RTresult
+        else: 
+            value = Number.null
+
+        return RTresult.success_return(value)
+    
+    def visit_ContinueNode(self, node: ContinueNode, context: Context): 
+        return RunTimeResult().success_continue()
+    
+    def visit_BreakNode(self, node: BreakNode, context: Context): 
+        return RunTimeResult().success_break()
 
 global_symbol_table = SymbolTable()
 global_symbol_table.set("NULL", Number.null)
