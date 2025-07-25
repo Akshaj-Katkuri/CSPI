@@ -1599,22 +1599,22 @@ class BaseFunction(Value):
         return new_context
     
     def check_args(self, arg_names, args):
-        result = RunTimeResult()
+        RTresult = RunTimeResult()
 
         if len(args) > len(arg_names): 
-            return result.failure(RunTimeError(
+            return RTresult.failure(RunTimeError(
                 self.pos_start, self.pos_end, 
                 f"{len(args) - len(arg_names)} too many arguments passed into '{self.name}'",
                 self.context
             ))
         elif len(args) < len(arg_names): 
-            return result.failure(RunTimeError(
+            return RTresult.failure(RunTimeError(
                 self.pos_start, self.pos_end, 
                 f"{len(arg_names) - len(args)} too few arguments passed into '{self.name}'",
                 self.context
             ))
         
-        return result.success(None)
+        return RTresult.success(None)
     
     def populate_args(self, arg_names, args, exec_context): 
         """ Puts all the arguments into a symbol table """
@@ -1625,11 +1625,11 @@ class BaseFunction(Value):
             exec_context.symbol_table.set(arg_name, arg_value)
 
     def check_and_populate_args(self, arg_names, args, exec_context):
-        result = RunTimeResult()
-        result.register(self.check_args(arg_names, args))
-        if result.error: return result
+        RTresult = RunTimeResult()
+        RTresult.register(self.check_args(arg_names, args))
+        if RTresult.should_return(): return RTresult
         self.populate_args(arg_names, args, exec_context)
-        return result.success(None)
+        return RTresult.success(None)
 
 class Function(BaseFunction):
     def __init__(self, name, body_node, arg_names, should_auto_return):
@@ -1639,16 +1639,18 @@ class Function(BaseFunction):
         self.should_auto_return = should_auto_return
 
     def execute(self, args): 
-        result = RunTimeResult()
+        RTresult = RunTimeResult()
         interpreter = Interpreter()
         exec_context = self.generate_new_context()
 
-        result.register(self.check_and_populate_args(self.arg_names, args, exec_context))
-        if result.error: return result
+        RTresult.register(self.check_and_populate_args(self.arg_names, args, exec_context))
+        if RTresult.should_return(): return RTresult
 
-        value = result.register(interpreter.visit(self.body_node, exec_context))
-        if result.error: return result
-        return result.success(Number.null if self.should_auto_return else value)
+        value = RTresult.register(interpreter.visit(self.body_node, exec_context))
+        if RTresult.should_return() and RTresult.func_return_value == None: return RTresult
+
+        return_value = (value if self.should_auto_return else None) or RTresult.func_return_value or Number.null
+        return RTresult.success(return_value)
     
     def copy(self): 
         copy = Function(self.name, self.body_node, self.arg_names, self.should_auto_return)
@@ -1664,18 +1666,18 @@ class BuiltInFunction(BaseFunction):
         super().__init__(name)
 
     def execute(self, args): 
-        result = RunTimeResult()
+        RTresult = RunTimeResult()
         exec_context = self.generate_new_context()
 
         method_name = f'execute_{self.name}'
         method = getattr(self, method_name, self.no_visit_method)
 
-        result.register(self.check_and_populate_args(method.arg_names, args, exec_context))
-        if result.error: return result
+        RTresult.register(self.check_and_populate_args(method.arg_names, args, exec_context))
+        if RTresult.should_return(): return RTresult
 
-        return_value = result.register(method(exec_context))
-        if result.error: return result
-        return result.success(return_value)
+        return_value = RTresult.register(method(exec_context))
+        if RTresult.should_return(): return RTresult
+        return RTresult.success(return_value)
 
     def no_visit_method(self, node, context): 
         raise Exception(f'No execute_{self.name} method defined')
@@ -2007,8 +2009,16 @@ class Interpreter:
             context.symbol_table.set(node.var_name_token.value, Number(i))
             i += step_value.value
 
-            elements.append(RTresult.register(self.visit(node.body_node, context)))
-            if RTresult.should_return(): return RTresult
+            value = RTresult.register(self.visit(node.body_node, context))
+            if RTresult.should_return() and RTresult.loop_should_continue == False and RTresult.loop_should_break == False: return RTresult
+
+            if RTresult.loop_should_continue: 
+                continue
+
+            if RTresult.loop_should_break: 
+                break
+
+            elements.append(value)
 
         return RTresult.success(
             Number.null if node.should_return_null else
@@ -2026,8 +2036,16 @@ class Interpreter:
             RTresult.register(self.visit(node.body_node, context))
             if RTresult.should_return(): return RTresult
 
-            condition_value: Number = elements.append(RTresult.register(self.visit(node.condition_node, context)))
-            if RTresult.should_return(): return RTresult
+            value = RTresult.register(self.visit(node.body_node, context))
+            if RTresult.should_return() and RTresult.loop_should_continue == False and RTresult.loop_should_break == False: return RTresult
+
+            if RTresult.loop_should_continue: 
+                continue
+
+            if RTresult.loop_should_break: 
+                break
+
+            elements.append(value)
 
         return RTresult.success(
             Number.null if node.should_return_null else
@@ -2040,7 +2058,7 @@ class Interpreter:
         func_name = node.var_name_token.value if node.var_name_token else None #TODO: Shouldn't need this if condition later
         body_node = node.body_node
         arg_names = [arg_name.value for arg_name in node.arg_name_tokens]
-        func_value = Function(func_name, body_node, arg_names, node.should_return_null).set_context(context).set_pos(node.pos_start, node.pos_end)
+        func_value = Function(func_name, body_node, arg_names, node.should_auto_return).set_context(context).set_pos(node.pos_start, node.pos_end)
         
         if node.var_name_token: #TODO: could prob remove this later after requiring function name
             context.symbol_table.set(func_name, func_value)
