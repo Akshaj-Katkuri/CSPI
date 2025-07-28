@@ -171,6 +171,8 @@ class Lexer:
         while self.current_char != None: 
             if self.current_char in ' \t': 
                 self.advance()
+            elif self.current_char == '#':
+                self.skip_comment()
             elif self.current_char in ';\n':
                 tokens.append(Token(TYPE_NEWLINE, pos_start=self.pos))
                 self.advance()
@@ -250,6 +252,14 @@ class Lexer:
         tokens.append(Token(TYPE_EOF, pos_start=self.pos))
         return tokens, None
 
+    def skip_comment(self): 
+        self.advance() # Advance past the '#'
+
+        while self.current_char != '\n': 
+            self.advance()
+
+        self.advance() # Advance past the new line
+    
     def make_number(self): 
         num_str = ''
         dot_count = 0 # to check if float or integer
