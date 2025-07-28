@@ -1,3 +1,10 @@
-b <- 5
+# This is a much bettor for loop
+FUN better_foR(start, end)
+    FOR i = start TO end THEN 
+        PRINT(i)
+    END
+END
 
-←
+better_foR(5, 10)
+
+error here

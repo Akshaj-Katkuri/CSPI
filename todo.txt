@@ -52,4 +52,8 @@ Built-in Functions:
  - POP
  - EXTEND
 
- - Change all these functions so that it matches the CSP reference sheet
+ - Change all these functions so that it matches the CSP reference sheet. Maybe remove some
+
+Comments: 
+ - in skip_comment(), if a comment is on a single line with no new line, then while loop will keep calling advance() indefinitely since no new line found
+ - in the event that there is a comment that is the only comment in the file with no code following after it, the program detects an empty line as an invalid syntax which throws a confusing error. This error has less to do with the comment function and more to do with the program not ignoring an empty line

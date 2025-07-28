@@ -1388,7 +1388,7 @@ class Value:
     
     def illegal_operation(self, other=None):
         if not other: other = self
-        return RuntimeError(
+        return RunTimeError(
             self.pos_start, self.pos_end,
             'Illegal operation',
             self.context
@@ -1758,7 +1758,7 @@ class BuiltInFunction(BaseFunction):
         value_ = exec_context.symbol_table.get('value')
 
         if not isinstance(list_, List): 
-            return RunTimeResult().failue(RuntimeError( #TODO: Change to syntax error maybe?
+            return RunTimeResult().failue(RunTimeError( #TODO: Change to syntax error maybe?
                 self.pos_start, self.pos_end,
                 "First argument must be a list", 
                 exec_context
@@ -1773,14 +1773,14 @@ class BuiltInFunction(BaseFunction):
         index = exec_context.symbol_table.get('index')
 
         if not isinstance(list_, List): 
-            return RunTimeResult().failue(RuntimeError( #TODO: Change to syntax error maybe?
+            return RunTimeResult().failue(RunTimeError( #TODO: Change to syntax error maybe?
                 self.pos_start, self.pos_end,
                 "First argument must be a list", 
                 exec_context
             ))
         
         if not isinstance(index, Number): 
-            return RunTimeResult().failue(RuntimeError( #TODO: Change to syntax error maybe?
+            return RunTimeResult().failue(RunTimeError( #TODO: Change to syntax error maybe?
                 self.pos_start, self.pos_end,
                 "Second argument must be a number", 
                 exec_context
@@ -1789,7 +1789,7 @@ class BuiltInFunction(BaseFunction):
         try: 
             element = list_.elements.pop(index.value)
         except: #TODO: Add type of error here
-            return RunTimeResult().failure(RuntimeError(
+            return RunTimeResult().failure(RunTimeError(
                 self.pos_start, self.pos_end, 
                 "Element at this index couldn't be removed because index is out of bounds",
                 exec_context
@@ -1802,14 +1802,14 @@ class BuiltInFunction(BaseFunction):
         listB = exec_context.symbol_table.get('listB')
 
         if not isinstance(listA, List): 
-            return RunTimeResult().failue(RuntimeError( #TODO: Change to syntax error maybe?
+            return RunTimeResult().failue(RunTimeError( #TODO: Change to syntax error maybe?
                 self.pos_start, self.pos_end,
                 "First argument must be a list", 
                 exec_context
             ))
         
         if not isinstance(listB, List): 
-            return RunTimeResult().failue(RuntimeError( #TODO: Change to syntax error maybe?
+            return RunTimeResult().failue(RunTimeError( #TODO: Change to syntax error maybe?
                 self.pos_start, self.pos_end,
                 "Second argument must be a list", 
                 exec_context
@@ -1823,7 +1823,7 @@ class BuiltInFunction(BaseFunction):
         list_ = exec_context.symbol_table.get('list')
 
         if not isinstance(list_, List): 
-            return RunTimeResult().failue(RuntimeError( #TODO: Change to syntax error maybe?
+            return RunTimeResult().failue(RunTimeError( #TODO: Change to syntax error maybe?
                 self.pos_start, self.pos_end,
                 "Argument must be a list", 
                 exec_context
@@ -1848,7 +1848,7 @@ class BuiltInFunction(BaseFunction):
             with open(fn, 'r') as f:
                 script = f.read()
         except Exception as e: 
-            return RunTimeResult().failure(RuntimeError(
+            return RunTimeResult().failure(RunTimeError(
                 self.pos_start, self.pos_end,
                 f'Failed to load script {fn}\n' + str(e),
                 exec_context
@@ -1857,7 +1857,7 @@ class BuiltInFunction(BaseFunction):
         _, error = run(fn, script)
 
         if error: 
-            return RunTimeResult().failure(RuntimeError(
+            return RunTimeResult().failure(RunTimeError(
                 self.pos_start, self.pos_end,
                 f'Failed to finish executing script "{fn}"\n' + error.as_string(),
                 exec_context
