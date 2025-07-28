@@ -1809,6 +1809,40 @@ class BuiltInFunction(BaseFunction):
         return RunTimeResult().success(Number.null)
     execute_extend.arg_names = ['listA', 'listB']
 
+    def execute_run(self, exec_context): 
+        fn = exec_context.symbol_table.get('fn')
+
+        if not isinstance(fn, String): 
+            return RunTimeResult().failure(RunTimeError(
+                self.pos_start, self.pos_end, 
+                "Argument must be a string", 
+                exec_context
+            ))
+        
+        fn = fn.value
+
+        try: 
+            with open(fn, 'r') as f:
+                script = f.read()
+        except Exception as e: 
+            return RunTimeResult().failure(RuntimeError(
+                self.pos_start, self.pos_end,
+                f'Failed to load script {fn}\n' + str(e),
+                exec_context
+            ))
+        
+        _, error = run(fn, script)
+
+        if error: 
+            return RunTimeResult().failure(RuntimeError(
+                self.pos_start, self.pos_end,
+                f'Failed to finish executing script "{fn}"\n' + error.as_string(),
+                exec_context
+            ))
+        
+        return RunTimeResult().success(Number.null)
+    execute_run.arg_names = ['fn']
+
 BuiltInFunction.print       = BuiltInFunction("print")
 BuiltInFunction.print_ret   = BuiltInFunction("print_ret")
 BuiltInFunction.input       = BuiltInFunction("input")
