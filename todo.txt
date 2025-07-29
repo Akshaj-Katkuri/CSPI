@@ -33,10 +33,7 @@ List:
  - Remove + and / operators for list
  - Make * operator multiply list that many times (how python does it)
  - Change how to get an element from the list
- - Built in list functions
-
-Structure: 
- - Break up the big file into smaller pieces, like holy this has horrible organization. 
+ - Built in list functions 
 
 Built-in Functions: 
  - PRINT
