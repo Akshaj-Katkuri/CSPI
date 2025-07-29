@@ -1,9 +1,9 @@
-import pseudo
+from interpreter import run
 
 while True: 
     text = input('>>>')
     if text.strip() == "": continue
-    result, error = pseudo.run('<stdn>',text)
+    result, error = run('<stdn>',text)
 
     if error: 
         print(error.as_string())
