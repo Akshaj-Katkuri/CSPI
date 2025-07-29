@@ -1,13 +1,13 @@
 import os
 
 from values import *
-from context import Context, SymbolTable
-from results import RunTimeResult
-from errors import RunTimeError
-from tokens import *
-from nodes import *
-from lexer import Lexer
-from parser import Parser
+from utils.context import Context, SymbolTable
+from utils.results import RunTimeResult
+from utils.errors import RunTimeError
+from lexer.tokens import *
+from parser.nodes import *
+from lexer.lexer import Lexer
+from parser.parser import Parser
 
 class BaseFunction(Value): 
     def __init__(self, name):

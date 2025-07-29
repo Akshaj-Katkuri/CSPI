@@ -1,4 +1,4 @@
-from position import Position
+from utils.position import Position
 
 class Context: 
     def __init__(self, display_name, parent=None, parent_entry_pos: Position = None):

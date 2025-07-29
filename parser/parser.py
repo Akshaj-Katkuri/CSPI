@@ -1,7 +1,7 @@
-from tokens import *
-from errors import InvalidSyntaxError
-from results import ParseResult
-from nodes import *
+from lexer.tokens import *
+from utils.errors import InvalidSyntaxError
+from utils.results import ParseResult
+from parser.nodes import *
 
 class Parser: 
     def __init__(self, tokens):

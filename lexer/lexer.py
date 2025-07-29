@@ -1,6 +1,6 @@
-from position import Position
-from tokens import *
-from errors import IllegalCharError, ExpectedCharacterError
+from utils.position import Position
+from lexer.tokens import *
+from utils.errors import IllegalCharError, ExpectedCharacterError
 
 class Lexer: 
     def __init__(self, fn, text):

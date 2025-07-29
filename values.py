@@ -1,6 +1,6 @@
-from position import Position
-from errors import RunTimeError
-from results import RunTimeResult
+from utils.position import Position
+from utils.errors import RunTimeError
+from utils.results import RunTimeResult
 
 class Value:
     def __init__(self):

@@ -1,7 +1,7 @@
 from position import Position
-from context import Context
+from utils.context import Context
 
-from utils.utilities import string_with_arrows
+from utils.utility_functions import string_with_arrows
 
 class Error: 
     def __init__(self, pos_start: Position, pos_end, error_name, details):
