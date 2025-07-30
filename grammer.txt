@@ -53,10 +53,10 @@ while-expr      : KEYWORD:WHILE expr KEYWORD:THEN
                   statement
                 | (NEWLINE statements KEYWORD:END)
 
-func-def        : KEYWORD:FUN IDENTIFIER?
+func-def        : KEYWORD:PROCEDURE IDENTIFIER?
                   LPAREN (IDENTIFIER (COMMA IDENTIFIER)*)? RPAREN 
                   (ARROW expr)
-                | (NEWLINE statements KEYWORD:END)
+                | (LCURL statements RCURL)
 
 *       : 0 or more of what is before the *
 ?       : before the ? is optional

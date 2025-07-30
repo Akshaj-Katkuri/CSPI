@@ -87,19 +87,19 @@ class Number(Value):
         if isinstance(other, Number):
             return Number(self.value + other.value).set_context(self.context), None
         else: 
-            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+            return None, Value.illegal_operation(self, other)
         
     def subract_by(self, other): 
         if isinstance(other, Number):
             return Number(self.value - other.value).set_context(self.context), None
         else: 
-            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+            return None, Value.illegal_operation(self, other)
         
     def multiply_by(self, other):
         if isinstance(other, Number):
             return Number(self.value * other.value).set_context(self.context), None
         else: 
-            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+            return None, Value.illegal_operation(self, other)
         
     def divide_by(self, other):
         if isinstance(other, Number):
@@ -107,7 +107,7 @@ class Number(Value):
                 return None, RunTimeError(other.pos_start, other.pos_end, "Division by zero", self.context)
             return Number(self.value / other.value).set_context(self.context), None
         else: 
-            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+            return None, Value.illegal_operation(self, other)
         
     def mod_by(self, other): 
         if isinstance(other, Number): 
@@ -115,61 +115,61 @@ class Number(Value):
                 return None, RunTimeError(other.pos_start, other.pos_end, "Division by zero", self.context)
             return Number(self.value % other.value).set_context(self.context), None
         else: 
-            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+            return None, Value.illegal_operation(self, other)
         
     def power_by(self, other): 
         if isinstance(other, Number):
             return Number(self.value ** other.value).set_context(self.context), None
         else: 
-            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+            return None, Value.illegal_operation(self, other)
 
     def get_comparison_eq(self, other):
         if isinstance(other, Number):
             return Number(int(self.value == other.value)).set_context(self.context), None
         else: 
-            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+            return None, Value.illegal_operation(self, other)
         
     def get_comparison_ne(self, other):
         if isinstance(other, Number):
             return Number(int(self.value != other.value)).set_context(self.context), None
         else: 
-            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+            return None, Value.illegal_operation(self, other)
         
     def get_comparison_lt(self, other):
         if isinstance(other, Number):
             return Number(int(self.value < other.value)).set_context(self.context), None
         else: 
-            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+            return None, Value.illegal_operation(self, other)
         
     def get_comparison_gt(self, other):
         if isinstance(other, Number):
             return Number(int(self.value > other.value)).set_context(self.context), None
         else: 
-            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+            return None, Value.illegal_operation(self, other)
         
     def get_comparison_lte(self, other):
         if isinstance(other, Number):
             return Number(int(self.value <= other.value)).set_context(self.context), None
         else: 
-            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+            return None, Value.illegal_operation(self, other)
         
     def get_comparison_gte(self, other):
         if isinstance(other, Number):
             return Number(int(self.value >= other.value)).set_context(self.context), None
         else: 
-            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+            return None, Value.illegal_operation(self, other)
         
     def and_by(self, other):
         if isinstance(other, Number):
             return Number(int(self.value and other.value)).set_context(self.context), None
         else: 
-            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+            return None, Value.illegal_operation(self, other)
         
     def or_by(self, other): 
         if isinstance(other, Number): 
             return Number(int(self.value or other.value)).set_context(self.context), None
         else: 
-            return None, Value.illegal_operation(self.pos_start, other.pos_end)
+            return None, Value.illegal_operation(self, other)
         
     def notted(self): 
         return Number(1 if self.value == 0 else 0).set_context(self.context), None

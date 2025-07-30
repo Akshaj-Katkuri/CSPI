@@ -11,6 +11,8 @@ Types:
 
 If statements: 
  - Change the syntax to have curly braces to wrap expressions and remove 'THEN' keyword
+ - Doesn't work with lists for comparisn
+ - Invalid syntax for condition inside if statement is pointing to wrong error
 
 REPEAT-loop: 
  - Add Repeat n times feature

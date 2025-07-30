@@ -1,4 +1,4 @@
-from position import Position
+from utils.position import Position
 
 # Token types
 TYPE_INT = 'INT'
@@ -14,8 +14,10 @@ TYPE_POW = 'POW'
 TYPE_EQ = 'EQ' # Assignment operator
 TYPE_LPAREN = 'LPAREN'
 TYPE_RPAREN = 'RPAREN'
-TYPE_LSQUARE = 'LSQUARE'
-TYPE_RSQUARE = 'RSQUARE'
+TYPE_LSQUARE = 'LSQUARE' # [
+TYPE_RSQUARE = 'RSQUARE' # ]
+TYPE_LCURL = 'LCURL' # {
+TYPE_RCURL = 'RCURL' # }
 TYPE_EE = 'EE' # ==
 TYPE_NE = 'NE' # !=
 TYPE_LT = 'LT' # <

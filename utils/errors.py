@@ -1,4 +1,4 @@
-from position import Position
+from utils.position import Position
 from utils.context import Context
 
 from utils.utility_functions import string_with_arrows
