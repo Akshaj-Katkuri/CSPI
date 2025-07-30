@@ -44,7 +44,7 @@ KEYWORDS = [
     'STEP',
     'WHILE',
     'TO',
-    'FUN', #TODO: Change this to "PROCEDURE"
+    'PROCEDURE',
     'END',
     'RETURN',
     'CONTINUE',

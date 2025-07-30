@@ -1,16 +1,11 @@
 # This is a much bettor for loop
-a = [1, 3]
+a = []
 
-FUN better_foR(start, end)
+PROCEDURE better_foR(start, end) {
     FOR i = start TO end THEN 
         APPEND(a,i)
     END
-END
-
-IF 5 == 5 THEN 
-    PRINT("Works")
-ELSE
-    PRINT("something is wrong")
-END
+}
 
 better_foR(5, 10)
+PRINT(a)

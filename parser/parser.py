@@ -288,10 +288,10 @@ class Parser:
     def func_def(self): 
         result = ParseResult()
 
-        if not self.current_token.matches(TYPE_KEYWORD, 'FUN'): 
+        if not self.current_token.matches(TYPE_KEYWORD, 'PROCEDURE'): 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected 'FUN'"
+                "Expected 'PROCEDURE'"
             ))
 
         result.register_advancement()
@@ -363,10 +363,10 @@ class Parser:
                 var_name_token=var_name_token, arg_name_tokens=arg_name_tokens, body_node=body_node, should_auto_return=True
             ))
         
-        if self.current_token.type != TYPE_NEWLINE:
+        if self.current_token.type != TYPE_LCURL:
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected '->' or NEWLINE"
+                "Expected '->' or '{'"
             ))
 
         result.register_advancement()
@@ -375,12 +375,12 @@ class Parser:
         body_node = result.register(self.statements())
         if result.error: return result
 
-        if not self.current_token.matches(TYPE_KEYWORD, 'END'):
+        if self.current_token.type != TYPE_RCURL:
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end,
-                "Expected 'END'"
+                "Expected '}'" #TODO: Fix this message from being ovverriden
             ))
-        
+
         result.register_advancement()
         self.advance()
 
@@ -490,12 +490,12 @@ class Parser:
             if result.error: return result
             return result.success(while_expr)
         
-        elif token.matches(TYPE_KEYWORD, 'FUN'): 
+        elif token.matches(TYPE_KEYWORD, 'PROCEDURE'): 
             func_def = result.register(self.func_def())
             if result.error: return result
             return result.success(func_def)
             
-        return result.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, '[', '(', 'IF', 'FOR', 'WHILE', 'FUN'"))
+        return result.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, '[', '(', 'IF', 'FOR', 'WHILE', 'PROCEDURE'"))
     
     def call(self): 
         result = ParseResult()
@@ -625,7 +625,7 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end,
-                "Expected 'VAR', 'IF', 'WHILE', FOR', 'FUN', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords
+                "Expected 'VAR', 'IF', 'WHILE', FOR', 'PROCEDURE', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords
             ))
         
         return result.success(node)
@@ -657,7 +657,7 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 pos_start=pos_start, pos_end=self.current_token.pos_end.copy(),
-                details="Expected 'RETURN', 'CONTINUE', 'BREAK', 'VAR', 'IF', 'WHILE', FOR', 'FUN', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords
+                details="Expected 'RETURN', 'CONTINUE', 'BREAK', 'VAR', 'IF', 'WHILE', FOR', 'PROCEDURE', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords
             ))
         
         return result.success(expr)

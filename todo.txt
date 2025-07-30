@@ -11,7 +11,6 @@ Types:
 
 If statements: 
  - Change the syntax to have curly braces to wrap expressions and remove 'THEN' keyword
- - Doesn't work with lists for comparisn
  - Invalid syntax for condition inside if statement is pointing to wrong error
 
 REPEAT-loop: 
@@ -27,7 +26,7 @@ Lexer:
 
 Function: 
  - Change function syntax to make Identifier necessary. 
- - Change 
+ - Fix the error being overriden for func_def in parser
 
 List: 
  - Change list indexing to start from 0 or 1 (check reference sheet)
@@ -36,6 +35,8 @@ List:
  - Make * operator multiply list that many times (how python does it)
  - Change how to get an element from the list
  - Built in list functions 
+ - Make printing a list print the square brackets too
+ - Fix lists not working with comparisn operators
 
 Built-in Functions: 
  - PRINT
