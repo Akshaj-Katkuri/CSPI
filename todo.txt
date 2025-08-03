@@ -13,10 +13,6 @@ If statements:
  - Change the syntax to have curly braces to wrap expressions and remove 'THEN' keyword
  - Invalid syntax for condition inside if statement is pointing to wrong error
 
-REPEAT-loop: 
- - Add Repeat n times feature
- - Add Repeat until loop
-
 WHILE and FOR loops: 
  - Change while and for loops' syntax to correct syntax
  - Currently FOR and WHILE loops return list by default. Check if we want to change that. 
@@ -27,6 +23,7 @@ Lexer:
 Function: 
  - Change function syntax to make Identifier necessary. 
  - Fix the error being overriden for func_def in parser
+ - Allow infinite newlines before the left_curly_bracket and skip past them
 
 List: 
  - Change list indexing to start from 0 or 1 (check reference sheet)
