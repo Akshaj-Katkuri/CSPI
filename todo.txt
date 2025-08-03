@@ -15,7 +15,8 @@ If statements:
 
 WHILE and FOR loops: 
  - Change while and for loops' syntax to correct syntax
- - Currently FOR and WHILE loops return list by default. Check if we want to change that. 
+ - Currently FOR and WHILE loops return list by default. Check if we want to change that.
+ - Condition node in interpreter might not be updating 
 
 Lexer: 
  - Change lexing process to how POW is done for all comparisn operators. 
