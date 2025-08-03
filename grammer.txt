@@ -28,6 +28,7 @@ atom            : LPAREN expr RPAREN
                 : if-expr
                 : for-expr
                 : while-expr
+                : repeat-expr
                 : func-def
 
 list-expr       : LSQUARE (expr (COMMA expr)*)? RSQUARE
@@ -53,6 +54,11 @@ while-expr      : KEYWORD:WHILE expr KEYWORD:THEN
                   statement
                 | (NEWLINE statements KEYWORD:END)
 
+repeat-expr     : KEYWORD:REPEAT
+                  (KEYWORD:UNTIL LPAREN expr RPAREN) 
+                | (INT KEYWORD:TIMES)
+                  NEWLINE* LCURL statements RCURL
+
 func-def        : KEYWORD:PROCEDURE IDENTIFIER?
                   LPAREN (IDENTIFIER (COMMA IDENTIFIER)*)? RPAREN 
                   (ARROW expr)
@@ -61,4 +67,4 @@ func-def        : KEYWORD:PROCEDURE IDENTIFIER?
 *       : 0 or more of what is before the *
 ?       : before the ? is optional
 +       : 1 or more of what is before the +
-|       : means or
+|       : or

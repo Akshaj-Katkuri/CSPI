@@ -498,6 +498,57 @@ class Interpreter:
             List(elements).set_context(context).set_pos(node.pos_start, node.pos_end)
         )
     
+    def visit_RepeatUntilNode(self, node: RepeatUntilNode, context: Context):
+        RTresult = RunTimeResult()
+        elements = []
+
+        condition_value: Number = RTresult.register(self.visit(node.condition_node, context)) #TODO: Change this to boolean node once made
+        if RTresult.should_return(): return RTresult
+
+        while not condition_value.is_true(): 
+            value = RTresult.register(self.visit(node.body_node, context))
+            if RTresult.should_return() and RTresult.loop_should_continue == False and RTresult.loop_should_break == False: return RTresult
+
+            if RTresult.loop_should_continue: 
+                continue
+
+            if RTresult.loop_should_break: 
+                break
+
+            elements.append(value)
+
+            condition_value: Number = RTresult.register(self.visit(node.condition_node, context))
+            if RTresult.should_return(): return RTresult
+
+        return RTresult.success(
+            Number.null if node.should_return_null else
+            List(elements).set_context(context).set_pos(node.pos_start, node.pos_end)
+        )
+    
+    def visit_RepeatNode(self, node: RepeatNode, context: Context):
+        RTresult = RunTimeResult()
+        elements = []
+
+        count: Token = node.count_token
+        if RTresult.should_return(): return RTresult
+
+        for i in range(count.value): 
+            value = RTresult.register(self.visit(node.body_node, context))
+            if RTresult.should_return() and RTresult.loop_should_continue == False and RTresult.loop_should_break == False: return RTresult
+
+            if RTresult.loop_should_continue: 
+                continue
+
+            if RTresult.loop_should_break: 
+                break
+
+            elements.append(value)
+
+        return RTresult.success(
+            Number.null if node.should_return_null else
+            List(elements).set_context(context).set_pos(node.pos_start, node.pos_end)
+        )
+
     def visit_FunctionDefinitionNode(self, node: FunctionDefinitionNode, context: Context):
         RTresult = RunTimeResult()
 

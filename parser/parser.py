@@ -285,6 +285,121 @@ class Parser:
             condition, body, False
         ))
     
+    def repeat_expr(self): 
+        result = ParseResult()
+
+        if not self.current_token.matches(TYPE_KEYWORD, 'REPEAT'):
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end,
+                "Expected 'REPEAT'"
+            ))
+        
+        result.register_advancement()
+        self.advance()
+        
+        if self.current_token.matches(TYPE_KEYWORD, 'UNTIL'):
+            result.register_advancement()
+            self.advance()
+
+            if self.current_token.type != TYPE_LPAREN:
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end, 
+                    "Expected '('"
+                ))
+            
+            result.register_advancement()
+            self.advance()
+
+            condition = result.register(self.expr())
+            if result.error: return result
+
+            if self.current_token.type != TYPE_RPAREN:
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end, 
+                    "Expected ')'"
+                ))
+            
+            result.register_advancement()
+            self.advance()
+
+            while self.current_token.type == TYPE_NEWLINE: 
+                result.register_advancement()
+                self.advance()
+
+            if self.current_token.type != TYPE_LCURL:
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end, 
+                    "Expected '{'"
+                ))
+            
+            result.register_advancement()
+            self.advance()
+
+            body = result.register(self.statements())
+            if result.error: return result
+
+            if self.current_token.type != TYPE_RCURL: 
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end, 
+                    "Expected '}'"
+                ))
+            
+            result.register_advancement()
+            self.advance()
+
+            return result.success(RepeatUntilNode(
+                condition, body, True
+            ))
+        else:
+            if self.current_token.type != TYPE_INT:
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end, 
+                    "Expected 'UNTIL' or int"
+                ))
+            
+            count = self.current_token
+
+            result.register_advancement()
+            self.advance()
+
+            if not self.current_token.matches(TYPE_KEYWORD, 'TIMES'):
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end, 
+                    "Expected 'TIMES'"
+                ))
+            
+            result.register_advancement()
+            self.advance()
+
+            while self.current_token.type == TYPE_NEWLINE: 
+                result.register_advancement()
+                self.advance()
+
+            if self.current_token.type != TYPE_LCURL: 
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end, 
+                    "Expected '{'"
+                ))
+            
+            result.register_advancement()
+            self.advance()
+
+            body = result.register(self.statements())
+            if result.error: return result
+
+            if self.current_token.type != TYPE_RCURL:
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end, 
+                    "Expected '}'"
+                ))
+            
+            result.register_advancement()
+            self.advance()
+
+            return result.success(RepeatNode(
+                count_token=count, body_node=body, should_return_null=True
+            ))
+
     def func_def(self): 
         result = ParseResult()
 
@@ -489,6 +604,11 @@ class Parser:
             while_expr = result.register(self.while_expr())
             if result.error: return result
             return result.success(while_expr)
+        
+        elif token.matches(TYPE_KEYWORD, 'REPEAT'):
+            repeat_expr = result.register(self.repeat_expr())
+            if result.error: return result
+            return result.success(repeat_expr)
         
         elif token.matches(TYPE_KEYWORD, 'PROCEDURE'): 
             func_def = result.register(self.func_def())
