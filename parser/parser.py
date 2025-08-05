@@ -30,7 +30,8 @@ class Parser:
         result = self.statements()
         if not result.error and self.current_token.type != TYPE_EOF:
             return result.failure(InvalidSyntaxError(
-                self.current_token.pos_start, self.current_token.pos_end, "Expected '+', '-', '*', or '/'"
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected '+', '-', '*', or '/'"
             ))
         return result
     
