@@ -7,6 +7,7 @@ class ParseResult:
         self.to_reverse_count = 0
 
     def register_advancement(self): 
+        self.last_registered_advance_count = 1
         self.advance_count += 1
 
     def register(self, result): 
@@ -26,7 +27,7 @@ class ParseResult:
         return self
 
     def failure(self, error): 
-        if not self.error or self.advance_count == 0:
+        if not self.error or self.last_registered_advance_count == 0:
             self.error = error
         return self
 

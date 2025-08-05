@@ -12,7 +12,7 @@ PROCEDURE better_foR(start, end) {
 
 b = 4
 
-REPEAT UNTIL b > 8 {
+REPEAT UNTIL(b > 8 {
   PRINT(b)
   b = b + 1
 }
