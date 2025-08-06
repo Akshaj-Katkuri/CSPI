@@ -440,7 +440,7 @@ class Parser:
             self.advance()
 
             while self.current_token.type == TYPE_COMMA: 
-                result.register_advancement
+                result.register_advancement()
                 self.advance()
 
                 if self.current_token.type != TYPE_IDENTIFIER: 
@@ -541,7 +541,7 @@ class Parser:
             if result.error: return result
 
         if self.current_token.type != TYPE_RSQUARE: 
-            result.failure(InvalidSyntaxError(
+            return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
                 "Expected ',' or ']'"
             ))
@@ -810,6 +810,7 @@ class Parser:
             if not more_statements: break
             statement = result.try_register(self.statement())
             if not statement: 
+                if result.error: return result
                 self.reverse(result.to_reverse_count)
                 more_statements = False
                 continue
