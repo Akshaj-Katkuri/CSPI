@@ -479,10 +479,14 @@ class Parser:
                 var_name_token=var_name_token, arg_name_tokens=arg_name_tokens, body_node=body_node, should_auto_return=True
             ))
         
+        while self.current_token.type == TYPE_NEWLINE: 
+            result.register_advancement()
+            self.advance()
+        
         if self.current_token.type != TYPE_LCURL:
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected '->' or '{'"
+                "Expected '->' or '{'" #TODO: Remove arrow after removing arrow
             ))
 
         result.register_advancement()
@@ -494,7 +498,7 @@ class Parser:
         if self.current_token.type != TYPE_RCURL:
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end,
-                "Expected '}'" #TODO: Fix this message from being ovverriden
+                "Expected '}'"
             ))
 
         result.register_advancement()
@@ -506,7 +510,6 @@ class Parser:
             body_node=body_node,
             should_auto_return=False
         ))
-
     
     def list_expr(self): 
         result = ParseResult()

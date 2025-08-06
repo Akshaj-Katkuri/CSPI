@@ -62,7 +62,7 @@ repeat-expr     : KEYWORD:REPEAT
 func-def        : KEYWORD:PROCEDURE IDENTIFIER?
                   LPAREN (IDENTIFIER (COMMA IDENTIFIER)*)? RPAREN 
                   (ARROW expr)
-                | (LCURL statements RCURL)
+                | (NEWLINE* LCURL statements RCURL)
 
 *       : 0 or more of what is before the *
 ?       : before the ? is optional
