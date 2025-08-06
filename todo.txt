@@ -10,13 +10,11 @@ Types:
  - Change default symbol tables for 'TRUE' and 'FALSE' to boolean instead of Number object
 
 If statements: 
- - Change the syntax to have curly braces to wrap expressions and remove 'THEN' keyword
- - Invalid syntax for condition inside if statement is pointing to wrong error
+ - Invalid syntax for condition inside if statement is pointing to wrong error (might be fixed)
 
 WHILE and FOR loops: 
  - Change while and for loops' syntax to correct syntax
  - Currently FOR and WHILE loops return list by default. Check if we want to change that.
- - Condition node in interpreter might not be updating 
 
 Lexer: 
  - Change lexing process to how POW is done for all comparisn operators. 
