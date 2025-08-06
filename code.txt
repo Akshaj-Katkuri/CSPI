@@ -1,6 +1,12 @@
+a = 67
+
 IF (a==5) {
   PRINT("YES")
 }
+ELIF (a==67) {
+  PRINT(67)
+  PRINT("Oh yeah")
+}
 ELSE {
-  PRINT("NO")
+  PRINT("Hell Nah")
 }

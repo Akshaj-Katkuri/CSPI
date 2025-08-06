@@ -34,10 +34,10 @@ atom            : LPAREN expr RPAREN
 list-expr       : LSQUARE (expr (COMMA expr)*)? RSQUARE
 
 if-expr         : KEYWORD: IF LPAREN expr RPAREN NEWLINE* LCURL
-                  statements RCURL (elif-expr|else-expr)?
+                  statements RCURL NEWLINE* (elif-expr|else-expr)?
 
 elif-expr       : KEYWORD:ELIF LPAREN expr RPAREN NEWLINE* LCURL
-                  statements RCURL (elif-expr|else-expr)?
+                  statements RCURL NEWLINE* (elif-expr|else-expr)?
 
 else-expr       : KEYWORD:ELSE NEWLINE* LCURL
                   statementS RCURL

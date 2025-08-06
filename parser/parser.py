@@ -96,6 +96,10 @@ class Parser:
         result.register_advancement()
         self.advance()
 
+        while self.current_token.type == TYPE_NEWLINE:
+            result.register_advancement()
+            self.advance()
+
         if self.current_token.matches(TYPE_KEYWORD, 'ELIF'):
             all_cases = result.register(self.elif_expr())
             if result.error: return result
