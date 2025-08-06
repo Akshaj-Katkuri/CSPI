@@ -45,47 +45,65 @@ class Parser:
                 self.current_token.pos_start, self.current_token.pos_end, 
                 f"Expected {case_keyword}"
             ))
-        
+
+        result.register_advancement()
+        self.advance()
+
+        if self.current_token.type != TYPE_LPAREN: 
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected '('"
+            ))
+
         result.register_advancement()
         self.advance()
 
         condition = result.register(self.expr())
         if result.error: return result
 
-        if not self.current_token.matches(TYPE_KEYWORD, 'THEN'): 
+        if self.current_token.type != TYPE_RPAREN: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected 'THEN'"
+                "Expected ')'"
             ))
-        
+
         result.register_advancement()
         self.advance()
 
-        if self.current_token.type == TYPE_NEWLINE: 
+        while self.current_token.type == TYPE_NEWLINE:
             result.register_advancement()
             self.advance()
 
-            statements = result.register(self.statements())
-            if result.error: return result
-            cases.append((condition, statements, True))
+        if self.current_token.type != TYPE_LCURL: 
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected '{'"
+            ))
 
-            if self.current_token.matches(TYPE_KEYWORD, 'END'): 
-                result.register_advancement()
-                self.advance()
-            else: 
-                all_cases = result.register(self.elif_or_else_expr())
-                if result.error: return result
-                new_cases, else_case = all_cases
-                cases.extend(new_cases)
-        else: 
-            expr = result.register(self.statement())
-            if result.error: return result
-            cases.append((condition, expr, False))
+        result.register_advancement()
+        self.advance()
 
-            all_cases = result.register(self.elif_or_else_expr())
+        statements = result.register(self.statements())
+        if result.error: return result
+        cases.append((condition, statements, True))
+
+        if self.current_token.type != TYPE_RCURL: 
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected '}'"
+            ))
+
+        result.register_advancement()
+        self.advance()
+
+        if self.current_token.matches(TYPE_KEYWORD, 'ELIF'):
+            all_cases = result.register(self.elif_expr())
             if result.error: return result
             new_cases, else_case = all_cases
             cases.extend(new_cases)
+        elif self.current_token.matches(TYPE_KEYWORD, 'ELSE'):
+            else_case = result.register(self.else_expr())
+            if result.error: return result
 
         return result.success((cases, else_case))
     
@@ -107,42 +125,33 @@ class Parser:
             result.register_advancement()
             self.advance()
 
-            if self.current_token.type == TYPE_NEWLINE:
+            while self.current_token.type == TYPE_NEWLINE:
                 result.register_advancement()
                 self.advance()
 
-                statements = result.register(self.statements())
-                if result.error: return result
-                else_case = (statements, True)
+            if self.current_token.type != TYPE_LCURL: 
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end, 
+                    "Expected '{'"
+                ))
 
-                if self.current_token.matches(TYPE_KEYWORD, 'END'): 
-                    result.register_advancement()
-                    self.advance()
-                else: 
-                    return result.failure(InvalidSyntaxError(
-                        self.current_token.pos_start, self.current_token.pos_end, 
-                        "Expected 'END'"
-                    ))
-            else: 
-                expr = result.register(self.statement())
-                if result.error: return result
-                else_case = (expr, False)
+            result.register_advancement()
+            self.advance()
+
+            statements = result.register(self.statements())
+            if result.error: return result
+            else_case = (statements, True)
+
+            if self.current_token.type != TYPE_RCURL: 
+                return result.failure(InvalidSyntaxError(
+                    self.current_token.pos_start, self.current_token.pos_end, 
+                    "Expected '}'"
+                ))
+            
+            result.register_advancement()
+            self.advance()
 
         return result.success(else_case)
-    
-    def elif_or_else_expr(self): 
-        result = ParseResult()
-        cases, else_case = [], None
-
-        if self.current_token.matches(TYPE_KEYWORD, 'ELIF'):
-            all_cases = result.register(self.elif_expr())
-            if result.error: return result
-            cases, else_case = all_cases
-        else: 
-            else_case = result.register(self.else_expr())
-            if result.error: return result
-
-        return result.success((cases, else_case))
     
     def for_expr(self): 
         result = ParseResult()

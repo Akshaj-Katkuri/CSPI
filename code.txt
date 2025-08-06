@@ -1,18 +1,6 @@
-# This is a much bettor for loop
-a = []
-
-PROCEDURE better_foR(start, end) {
-    FOR i = start TO end THEN 
-        APPEND(a,i)
-    END
-  }
-
-#better_foR(5, 10)
-#PRINT(a)
-
-b = 4
-
-REPEAT UNTIL(b > 8) {
-  PRINT(b)
-  b = b + 1
+IF (a==5) {
+  PRINT("YES")
+}
+ELSE {
+  PRINT("NO")
 }

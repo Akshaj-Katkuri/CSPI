@@ -23,8 +23,6 @@ Lexer:
 
 Function: 
  - Change function syntax to make Identifier necessary. 
- - Fix the error being overriden for func_def in parser
- - Allow infinite newlines before the left_curly_bracket and skip past them
 
 List: 
  - Change list indexing to start from 0 or 1 (check reference sheet)

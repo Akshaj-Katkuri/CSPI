@@ -33,17 +33,14 @@ atom            : LPAREN expr RPAREN
 
 list-expr       : LSQUARE (expr (COMMA expr)*)? RSQUARE
 
-if-expr         : KEYWORD: IF expr KEYWORD:THEN
-                  (statement elif-expr|else-expr?)
-                | (NEWLINE statements KEYWORD:END|elif-expr|else-expr)
+if-expr         : KEYWORD: IF LPAREN expr RPAREN NEWLINE* LCURL
+                  statements RCURL (elif-expr|else-expr)?
 
-elif-expr       : KEYWORD:ELIF expr KEYWORD:THEN
-                  (statement elif-expr|else-expr?)
-                | (NEWLINE statements KEYWORD:END|elif-expr|else-expr)
+elif-expr       : KEYWORD:ELIF LPAREN expr RPAREN NEWLINE* LCURL
+                  statements RCURL (elif-expr|else-expr)?
 
-else-expr       : KEYWORD:ELSE 
-                  statement
-                | (NEWLINE statements KEYWORD:END)
+else-expr       : KEYWORD:ELSE NEWLINE* LCURL
+                  statementS RCURL
 
 for-expr        : KEYWORD:FOR IDENTIFIER EQ expr KEYWORD:TO expr
                   (KEYWORD:STEP expr)? KEYWORD:THEN 
