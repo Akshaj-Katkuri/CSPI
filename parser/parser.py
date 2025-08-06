@@ -260,43 +260,54 @@ class Parser:
         result.register_advancement()
         self.advance()
 
-        condition = result.register(self.expr())
-        if result.error: return result
-
-        if not self.current_token.matches(TYPE_KEYWORD, 'THEN'): 
+        if self.current_token.type != TYPE_LPAREN: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected 'THEN'"
+                "Expected '('"
             ))
         
         result.register_advancement()
         self.advance()
 
-        if self.current_token.type == TYPE_NEWLINE: 
-            result.register_advancement()
-            self.advance()
-
-            body = result.register(self.statements())
-            if result.error: return result
-
-            if not self.current_token.matches(TYPE_KEYWORD, 'END'):
-                return result.failure(InvalidSyntaxError(
-                    self.current_token.pos_start, self.current_token.pos_end, 
-                    "Expected 'END'"
-                ))
-            
-            result.register_advancement()
-            self.advance()
-
-            return result.success(WhileNode(
-                condition, body, True
-            ))
-
-        body = result.register(self.statement())
+        condition = result.register(self.expr())
         if result.error: return result
 
+        if self.current_token.type != TYPE_RPAREN: 
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected ')'"
+            ))
+        
+        result.register_advancement()
+        self.advance()
+
+        while self.current_token.type == TYPE_NEWLINE: 
+            result.register_advancement()
+            self.advance()
+
+        if self.current_token.type != TYPE_LCURL: 
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected '{'"
+            ))
+        
+        result.register_advancement()
+        self.advance()
+
+        body = result.register(self.statements())
+        if result.error: return result
+
+        if self.current_token.type != TYPE_RCURL: 
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected '}'"
+            ))
+        
+        result.register_advancement()
+        self.advance()
+
         return result.success(WhileNode(
-            condition, body, False
+            condition, body, True
         ))
     
     def repeat_expr(self): 

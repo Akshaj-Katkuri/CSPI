@@ -1,12 +1,6 @@
-a = 67
+a = 5
 
-IF (a==5) {
-  PRINT("YES")
-}
-ELIF (a==67) {
-  PRINT(67)
-  PRINT("Oh yeah")
-}
-ELSE {
-  PRINT("Hell Nah")
+WHILE (a > 1) {
+  PRINT(a)
+  a = a - 1
 }

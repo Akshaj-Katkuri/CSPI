@@ -47,9 +47,8 @@ for-expr        : KEYWORD:FOR IDENTIFIER EQ expr KEYWORD:TO expr
                   statement
                 | (NEWLINE statements KEYWORD:END)
 
-while-expr      : KEYWORD:WHILE expr KEYWORD:THEN 
-                  statement
-                | (NEWLINE statements KEYWORD:END)
+while-expr      : KEYWORD:WHILE LPAREN expr RPAREN
+                  NEWLINE* LCURL statements RCURL
 
 repeat-expr     : KEYWORD:REPEAT
                   (KEYWORD:UNTIL LPAREN expr RPAREN) 

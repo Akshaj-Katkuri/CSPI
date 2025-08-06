@@ -475,12 +475,12 @@ class Interpreter:
         RTresult = RunTimeResult()
         elements = []
 
-        condition_value: Number = RTresult.register(self.visit(node.condition_node, context)) #TODO: Change this to boolean node once made
-        if RTresult.should_return(): return RTresult
-
-        while condition_value.is_true(): 
-            RTresult.register(self.visit(node.body_node, context))
+        while True: 
+            condition_value: Number = RTresult.register(self.visit(node.condition_node, context)) #TODO: Change this to boolean node once made
             if RTresult.should_return(): return RTresult
+
+            if not condition_value.is_true(): 
+                break
 
             value = RTresult.register(self.visit(node.body_node, context))
             if RTresult.should_return() and RTresult.loop_should_continue == False and RTresult.loop_should_break == False: return RTresult
@@ -502,10 +502,13 @@ class Interpreter:
         RTresult = RunTimeResult()
         elements = []
 
-        condition_value: Number = RTresult.register(self.visit(node.condition_node, context)) #TODO: Change this to boolean node once made
-        if RTresult.should_return(): return RTresult
+        while True: 
+            condition_value: Number = RTresult.register(self.visit(node.condition_node, context)) #TODO: Change this to boolean node once made
+            if RTresult.should_return(): return RTresult
 
-        while not condition_value.is_true(): 
+            if condition_value.is_true():
+                break
+
             value = RTresult.register(self.visit(node.body_node, context))
             if RTresult.should_return() and RTresult.loop_should_continue == False and RTresult.loop_should_break == False: return RTresult
 
@@ -516,9 +519,6 @@ class Interpreter:
                 break
 
             elements.append(value)
-
-            condition_value: Number = RTresult.register(self.visit(node.condition_node, context))
-            if RTresult.should_return(): return RTresult
 
         return RTresult.success(
             Number.null if node.should_return_null else
