@@ -42,10 +42,8 @@ elif-expr       : KEYWORD:ELIF LPAREN expr RPAREN NEWLINE* LCURL
 else-expr       : KEYWORD:ELSE NEWLINE* LCURL
                   statementS RCURL
 
-for-expr        : KEYWORD:FOR IDENTIFIER EQ expr KEYWORD:TO expr
-                  (KEYWORD:STEP expr)? KEYWORD:THEN 
-                  statement
-                | (NEWLINE statements KEYWORD:END)
+for-expr        : KEYWORD:FOR KEYWORD:EACH IDENTIFIER KEYWORD:IN (list-expr|IDENTIFIER)
+                  NEWLINE* LCRUL statements RCURL
 
 while-expr      : KEYWORD:WHILE LPAREN expr RPAREN
                   NEWLINE* LCURL statements RCURL

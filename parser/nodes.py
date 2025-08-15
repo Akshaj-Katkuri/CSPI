@@ -74,11 +74,9 @@ class IfNode:
         self.pos_end = (self.else_case or self.cases[-1])[0].pos_end
 
 class ForNode: 
-    def __init__(self, var_name_token, start_value_node, end_value_node, step_value_node, body_node, should_return_null): 
+    def __init__(self, var_name_token, list_node, body_node, should_return_null): 
         self.var_name_token: Token = var_name_token
-        self.start_value_node = start_value_node
-        self.end_value_node = end_value_node
-        self.step_value_node = step_value_node
+        self.list_node = list_node
         self.body_node = body_node
         self.should_return_null = should_return_null
 

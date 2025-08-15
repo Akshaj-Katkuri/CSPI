@@ -13,7 +13,7 @@ If statements:
  - Invalid syntax for condition inside if statement is pointing to wrong error (might be fixed)
 
 WHILE and FOR loops: 
- - Change while and for loops' syntax to correct syntax
+ - Change for loops' syntax to correct syntax
  - Currently FOR and WHILE loops return list by default. Check if we want to change that.
 
 Lexer: 

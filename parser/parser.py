@@ -169,84 +169,71 @@ class Parser:
         result.register_advancement()
         self.advance()
 
+        if not self.current_token.matches(TYPE_KEYWORD, 'EACH'): 
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end, 
+                "Expected 'EACH'"
+            ))
+        
+        result.register_advancement()
+        self.advance()
+
         if self.current_token.type != TYPE_IDENTIFIER: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected Identifier"
+                "Expected identifier"
             ))
         
         var_name = self.current_token
         result.register_advancement()
         self.advance()
 
-        if self.current_token.type != TYPE_EQ: 
+        if not self.current_token.matches(TYPE_KEYWORD, 'IN'):
             return result.failure(InvalidSyntaxError(
-                self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected '='"
+                self.current_token.pos_start, self.current_token.pos_end,
+                "Expected 'IN'"
             ))
         
         result.register_advancement()
         self.advance()
 
-        start_node = result.register(self.expr())
-        if result.error: return result
+        if self.current_token.type != TYPE_IDENTIFIER: #TODO: Add list expr here too
+            return result.failure(InvalidSyntaxError(
+                self.current_token.pos_start, self.current_token.pos_end,
+                "Expected identifier" #TODO: or list expr in error message
+            ))
+        
+        list_node = self.current_token
+        result.register_advancement()
+        
+        while self.current_token.type == TYPE_NEWLINE:
+            result.register_advancement()
+            self.advance()
 
-        if not self.current_token.matches(TYPE_KEYWORD, 'TO'):
+        if self.current_token.type != TYPE_LCURL:
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected 'TO'"
+                "Expected '{'"
             ))
         
         result.register_advancement()
         self.advance()
 
-        end_node = result.register(self.expr())
+        body_node = result.register(self.statements())
         if result.error: return result
 
-        if self.current_token.matches(TYPE_KEYWORD, 'STEP'): 
-            result.register_advancement()
-            self.advance()
-
-            step_node = result.register(self.expr())
-            if result.error: return result
-        else: 
-            step_node = None
-
-        if not self.current_token.matches(TYPE_KEYWORD, 'THEN'):
+        if self.current_token.type != TYPE_RCURL: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected 'THEN'"
+                "Expected '}'"
             ))
         
         result.register_advancement()
         self.advance()
-
-        if self.current_token.type == TYPE_NEWLINE: 
-            result.register_advancement()
-            self.advance()
-
-            body_node = result.register(self.statements())
-            if result.error: return result
-
-            if not self.current_token.matches(TYPE_KEYWORD, 'END'):
-                return result.failure(InvalidSyntaxError(
-                    self.current_token.pos_start, self.current_token.pos_end, 
-                    "Expected 'END'"
-                ))
-            
-            result.register_advancement()
-            self.advance()
-
-            return result.success(ForNode(
-                var_name, start_node, end_node, step_node, body_node, True
-            ))
-
-        body_node = result.register(self.statement())
-        if result.error: return result
-
+        
         return result.success(ForNode(
-            var_name, start_node, end_node, step_node, body_node, False
-        ))
+                var_name_token=var_name, list_node=list_node, body_node=body_node, should_return_null=True
+            ))
 
     def while_expr(self): 
         result = ParseResult()
