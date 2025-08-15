@@ -203,8 +203,9 @@ class Parser:
                 "Expected identifier" #TODO: or list expr in error message
             ))
         
-        list_node = self.current_token
+        list_node = VariableAccessNode(self.current_token)  # <-- wrap in node!
         result.register_advancement()
+        self.advance()
         
         while self.current_token.type == TYPE_NEWLINE:
             result.register_advancement()

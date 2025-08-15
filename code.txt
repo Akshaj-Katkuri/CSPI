@@ -1,6 +1,5 @@
-a = 5
+a = [1,2,3,4,5]
 
-WHILE (a > 1) {
-  PRINT(a)
-  a = a - 1
+FOR EACH num in a {
+  PRINT(num)
 }
