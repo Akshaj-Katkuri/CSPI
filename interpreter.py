@@ -432,36 +432,28 @@ class Interpreter:
         RTresult = RunTimeResult()
         elements = []
 
-        start_value: Number = RTresult.register(self.visit(node.start_value_node, context))
+        #TODO: Change this to accept list node also once made
+        iterable = RTresult.register(self.visit(node.list_node, context))
         if RTresult.should_return(): return RTresult
 
-        end_value: Number = RTresult.register(self.visit(node.end_value_node, context))
-        if RTresult.should_return(): return RTresult
+        if not isinstance(iterable, List):
+            return RTresult.failure(RunTimeError(
+                node.list_node.pos_start, node.list_node.pos_end,
+                "For loop can only iterate over a list",
+                context
+            ))
 
-        if node.step_value_node: 
-            step_value: Number = RTresult.register(self.visit(node.step_value_node, context))
-            if RTresult.should_return(): return RTresult
-        else: 
-            step_value = Number(1)
-        
-        i = start_value.value
-
-        if step_value.value >= 0: 
-            condition = lambda: i < end_value.value
-        else: 
-            condition = lambda: i > end_value.value
-
-        while condition(): 
-            context.symbol_table.set(node.var_name_token.value, Number(i))
-            i += step_value.value
+        for item in iterable.elements:
+            context.symbol_table.set(node.var_name_token.value, item)
 
             value = RTresult.register(self.visit(node.body_node, context))
-            if RTresult.should_return() and RTresult.loop_should_continue == False and RTresult.loop_should_break == False: return RTresult
+            if RTresult.should_return() and not RTresult.loop_should_continue and not RTresult.loop_should_break:
+                return RTresult
 
-            if RTresult.loop_should_continue: 
+            if RTresult.loop_should_continue:
                 continue
 
-            if RTresult.loop_should_break: 
+            if RTresult.loop_should_break:
                 break
 
             elements.append(value)
