@@ -1,5 +1,5 @@
-a = [1,2,3,4,5]
+a = 5
 
-REPEAT 5 times {
-  PRINT("num")
+REPEAT 5 TIMES{
+  PRINT(a)
 }

@@ -1,3 +1,6 @@
+from utils.errors import EndOfFile
+
+
 class ParseResult: 
     def __init__(self):
         self.error = None
@@ -18,6 +21,12 @@ class ParseResult:
     
     def try_register(self, result): 
         if result.error: 
+            self.to_reverse_count = result.advance_count
+            return None
+        return self.register(result)
+    
+    def try_eof_register(self, result): 
+        if result.error and isinstance(result.error, EndOfFile): 
             self.to_reverse_count = result.advance_count
             return None
         return self.register(result)

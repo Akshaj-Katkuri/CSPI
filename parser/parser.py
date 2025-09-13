@@ -1,5 +1,5 @@
 from lexer.tokens import *
-from utils.errors import InvalidSyntaxError
+from utils.errors import InvalidSyntaxError, EndOfFile
 from utils.results import ParseResult
 from parser.nodes import *
 
@@ -27,7 +27,7 @@ class Parser:
         return self.tokens[self.token_idx + 1] if self.token_idx + 1 < len(self.tokens) else None
     
     def parse(self): 
-        result = self.statements()
+        result = self.statements(initial=True)
         if not result.error and self.current_token.type != TYPE_EOF:
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
@@ -798,7 +798,7 @@ class Parser:
         
         return result.success(expr)
     
-    def statements(self): 
+    def statements(self, initial=False): 
         result = ParseResult()
         statements = []
         pos_start = self.current_token.pos_start.copy()
@@ -823,10 +823,23 @@ class Parser:
                 more_statements = False
 
             if not more_statements: break
-            statement = result.try_register(self.statement())
+            if initial: 
+                statement = result.try_eof_register(self.statement())
+                # if result.error: 
+                #     while self.current_token.type == TYPE_NEWLINE:
+                #         result.register_advancement()
+                #         self.advance()
+                #     if self.current_token.type == TYPE_EOF:
+                #         statement = None
+                #     else: 
+                #         return result
+            else: 
+                statement = result.try_register(self.statement())
+            
+            if result.error: return result
+            
             if not statement: 
-                if result.error: return result
-                self.reverse(result.to_reverse_count)
+                self.reverse(result.to_reverse_count) 
                 more_statements = False
                 continue
             statements.append(statement)
