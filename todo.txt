@@ -9,8 +9,13 @@ Types:
  - Support for boolean types with logical operators
  - Change default symbol tables for 'TRUE' and 'FALSE' to boolean instead of Number object
 
-If statements: 
- - Invalid syntax for condition inside if statement is pointing to wrong error (might be fixed)
+Printing: 
+ - Randomly prints 0 after each run
+
+Error: 
+ - Bad error messages for comparisn expressions
+ - Bad error message when this: a + +
+ - Bad error messages throughout rlly
 
 WHILE and FOR loops: 
  - Currently FOR and WHILE loops return list by default. Check if we want to change that.

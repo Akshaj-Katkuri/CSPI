@@ -1,9 +1,5 @@
-a = 4
+a = "yes"
 
-REPEAT 2 TIMES{
+IF (NOT 3 == 7) {
   PRINT(a)
-}
-
-REPEAT 5 TIMES{
-  PRINT("I said no")
 }

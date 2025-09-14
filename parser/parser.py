@@ -632,7 +632,7 @@ class Parser:
             return result.success(func_def)
         
         elif token.type == TYPE_EOF:
-            result.register_advancement()
+            result.register_advancement() # Fake registering advancement, so this error isn't overwritten during propogation
             return result.failure(EndOfFile(token.pos_start, token.pos_end, "Reached end of file"))
 
         return result.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, '[', '(', 'IF', 'FOR', 'WHILE', 'PROCEDURE'"))
