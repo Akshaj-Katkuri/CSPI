@@ -630,7 +630,11 @@ class Parser:
             func_def = result.register(self.func_def())
             if result.error: return result
             return result.success(func_def)
-            
+        
+        elif token.type == TYPE_EOF:
+            result.register_advancement()
+            return result.failure(EndOfFile(token.pos_start, token.pos_end, "Reached end of file"))
+
         return result.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, '[', '(', 'IF', 'FOR', 'WHILE', 'PROCEDURE'"))
     
     def call(self): 
@@ -831,7 +835,7 @@ class Parser:
                         self.advance()
                     if self.current_token.type == TYPE_EOF:
                         statement = None
-                        result.error = None
+                        # result.error = None
                     else: 
                         return result
             else: 

@@ -1,1 +1,9 @@
-REPEAT
+a = 4
+
+REPEAT 2 TIMES{
+  PRINT(a)
+}
+
+REPEAT 5 TIMES{
+  PRINT("I said no")
+}
