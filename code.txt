@@ -1,5 +1,1 @@
-a = 5
-
-REPEAT 5 TIMES{
-  PRINT(a)
-}
+REPEAT

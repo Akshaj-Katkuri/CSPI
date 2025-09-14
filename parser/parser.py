@@ -825,18 +825,19 @@ class Parser:
             if not more_statements: break
             if initial: 
                 statement = result.try_eof_register(self.statement())
-                # if result.error: 
-                #     while self.current_token.type == TYPE_NEWLINE:
-                #         result.register_advancement()
-                #         self.advance()
-                #     if self.current_token.type == TYPE_EOF:
-                #         statement = None
-                #     else: 
-                #         return result
+                if result.error: 
+                    while self.current_token.type == TYPE_NEWLINE:
+                        result.register_advancement()
+                        self.advance()
+                    if self.current_token.type == TYPE_EOF:
+                        statement = None
+                        result.error = None
+                    else: 
+                        return result
             else: 
                 statement = result.try_register(self.statement())
             
-            if result.error: return result
+            # if result.error: return result
             
             if not statement: 
                 self.reverse(result.to_reverse_count) 
