@@ -1,4 +1,5 @@
 import os
+import random
 
 from values import *
 from utils.context import Context, SymbolTable
@@ -114,10 +115,10 @@ class BuiltInFunction(BaseFunction):
     
     ####### Execute method for all functions #######
 
-    def execute_print(self, exec_context): 
+    def execute_display(self, exec_context): 
         print(str(exec_context.symbol_table.get('value')))
         return RunTimeResult().success(Number.null)
-    execute_print.arg_names = ["value"]
+    execute_display.arg_names = ["value"]
 
     def execute_print_return(self, exec_context): 
         return RunTimeResult().success(String(str(exec_context.symbol_table.get('value'))))
@@ -138,6 +139,27 @@ class BuiltInFunction(BaseFunction):
                 print(f"'{text}' mus be an integer. Try again!") #TODO: get rid of this and replace with error too?
         return RunTimeResult().success(Number(text))
     execute_input_int.arg_names = []
+
+    def execute_random(self, exec_context):
+        min_value = exec_context.symbol_table.get('min_value')
+        max_value = exec_context.symbol_table.get('max_value')
+
+        if not isinstance(min_value, Number): 
+            return RunTimeResult().failure(RunTimeError(
+                self.pos_start, self.pos_end, 
+                "First argument must be an integer", 
+                exec_context
+            ))
+        if not isinstance(max_value, Number): 
+            return RunTimeResult().failure(RunTimeError(
+                self.pos_start, self.pos_end, 
+                "Second argument must be an integer", 
+                exec_context
+            ))
+
+        random_value = random.randint(min_value.value, max_value.value)
+        return RunTimeResult().success(Number(random_value))
+    execute_random.arg_names = ['min_value', 'max_value']
 
     def execute_clear(self, exec_context): 
         os.system('cls' if os.name == 'nt' else 'clear')
@@ -277,10 +299,11 @@ class BuiltInFunction(BaseFunction):
         return RunTimeResult().success(Number.null)
     execute_run.arg_names = ['fn']
 
-BuiltInFunction.print       = BuiltInFunction("print")
+BuiltInFunction.display     = BuiltInFunction("display")
 BuiltInFunction.print_ret   = BuiltInFunction("print_ret")
 BuiltInFunction.input       = BuiltInFunction("input")
 BuiltInFunction.input_int   = BuiltInFunction("input_int")
+BuiltInFunction.random      = BuiltInFunction("random")
 BuiltInFunction.clear       = BuiltInFunction("clear")
 BuiltInFunction.is_number   = BuiltInFunction("is_number")
 BuiltInFunction.is_string   = BuiltInFunction("is_string")
@@ -592,10 +615,11 @@ global_symbol_table = SymbolTable()
 global_symbol_table.set("NULL", Number.null)
 global_symbol_table.set("TRUE", Number.true)
 global_symbol_table.set("FALSE", Number.false) #TODO: Maybe add pi
-global_symbol_table.set("PRINT", BuiltInFunction.print)
+global_symbol_table.set("DISPLAY", BuiltInFunction.display)
 global_symbol_table.set("PRINT_RET", BuiltInFunction.print_ret)
 global_symbol_table.set("INPUT", BuiltInFunction.input)
 global_symbol_table.set("INPUT_INT", BuiltInFunction.input_int)
+global_symbol_table.set("RANDOM", BuiltInFunction.random)
 global_symbol_table.set("CLEAR", BuiltInFunction.clear)
 global_symbol_table.set("CLS", BuiltInFunction.clear)
 global_symbol_table.set("IS_NUM", BuiltInFunction.is_number)

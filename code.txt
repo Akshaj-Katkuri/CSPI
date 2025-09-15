@@ -1,5 +1,6 @@
 a = "yes"
 
 IF (NOT 3 == 7) {
-  PRINT(a)
+  DISPLAY(RANDOM(4, 8))
+  DISPLAY(a)
 }
