@@ -191,7 +191,7 @@ class BuiltInFunction(BaseFunction):
         value_ = exec_context.symbol_table.get('value')
 
         if not isinstance(list_, List): 
-            return RunTimeResult().failue(RunTimeError( #TODO: Change to syntax error maybe?
+            return RunTimeResult().failure(RunTimeError( #TODO: Change to syntax error maybe?
                 self.pos_start, self.pos_end,
                 "First argument must be a list", 
                 exec_context
@@ -201,21 +201,44 @@ class BuiltInFunction(BaseFunction):
         return RunTimeResult().success(Number.null)
     execute_append.arg_names = ['list', 'value']
 
-    def execute_pop(self, exec_context): 
+    def execute_insert(self, exec_context):
         list_ = exec_context.symbol_table.get('list')
         index = exec_context.symbol_table.get('index')
+        value = exec_context.symbol_table.get('value')
 
         if not isinstance(list_, List): 
-            return RunTimeResult().failue(RunTimeError( #TODO: Change to syntax error maybe?
+            return RunTimeResult().failure(RunTimeError( #TODO: Change to syntax error maybe?
                 self.pos_start, self.pos_end,
                 "First argument must be a list", 
                 exec_context
             ))
         
         if not isinstance(index, Number): 
-            return RunTimeResult().failue(RunTimeError( #TODO: Change to syntax error maybe?
+            return RunTimeResult().failure(RunTimeError( #TODO: Change to syntax error maybe?
                 self.pos_start, self.pos_end,
-                "Second argument must be a number", 
+                "Second argument must be an integer", 
+                exec_context
+            ))
+        
+        list_.elements.insert(index.value, value)
+        return RunTimeResult().success(Number.null)
+    execute_insert.arg_names = ['list', 'index', 'value']
+
+    def execute_remove(self, exec_context): 
+        list_ = exec_context.symbol_table.get('list')
+        index = exec_context.symbol_table.get('index')
+
+        if not isinstance(list_, List): 
+            return RunTimeResult().failure(RunTimeError( #TODO: Change to syntax error maybe?
+                self.pos_start, self.pos_end,
+                "First argument must be a list", 
+                exec_context
+            ))
+        
+        if not isinstance(index, Number): 
+            return RunTimeResult().failure(RunTimeError( #TODO: Change to syntax error maybe?
+                self.pos_start, self.pos_end,
+                "Second argument must be an integer", 
                 exec_context
             ))
         
@@ -228,21 +251,21 @@ class BuiltInFunction(BaseFunction):
                 exec_context
             ))
         return RunTimeResult().success(element)
-    execute_pop.arg_names = ['list', 'index']
+    execute_remove.arg_names = ['list', 'index']
 
     def execute_extend(self, exec_context):
         listA = exec_context.symbol_table.get('listA')
         listB = exec_context.symbol_table.get('listB')
 
         if not isinstance(listA, List): 
-            return RunTimeResult().failue(RunTimeError( #TODO: Change to syntax error maybe?
+            return RunTimeResult().failure(RunTimeError( #TODO: Change to syntax error maybe?
                 self.pos_start, self.pos_end,
                 "First argument must be a list", 
                 exec_context
             ))
         
         if not isinstance(listB, List): 
-            return RunTimeResult().failue(RunTimeError( #TODO: Change to syntax error maybe?
+            return RunTimeResult().failure(RunTimeError( #TODO: Change to syntax error maybe?
                 self.pos_start, self.pos_end,
                 "Second argument must be a list", 
                 exec_context
@@ -252,18 +275,18 @@ class BuiltInFunction(BaseFunction):
         return RunTimeResult().success(Number.null)
     execute_extend.arg_names = ['listA', 'listB']
 
-    def execute_len(self, exec_context): 
+    def execute_length(self, exec_context): 
         list_ = exec_context.symbol_table.get('list')
 
         if not isinstance(list_, List): 
-            return RunTimeResult().failue(RunTimeError( #TODO: Change to syntax error maybe?
+            return RunTimeResult().failure(RunTimeError( #TODO: Change to syntax error maybe?
                 self.pos_start, self.pos_end,
                 "Argument must be a list", 
                 exec_context
             ))
         
         return RunTimeResult().success(Number(len(list_.elements)))
-    execute_len.arg_names = ['list']
+    execute_length.arg_names = ['list']
 
     def execute_run(self, exec_context): 
         fn = exec_context.symbol_table.get('fn')
@@ -310,9 +333,10 @@ BuiltInFunction.is_string   = BuiltInFunction("is_string")
 BuiltInFunction.is_list     = BuiltInFunction("is_list")
 BuiltInFunction.is_function = BuiltInFunction("is_function")
 BuiltInFunction.append      = BuiltInFunction("append")
-BuiltInFunction.pop         = BuiltInFunction("pop")
+BuiltInFunction.insert      = BuiltInFunction("insert")
+BuiltInFunction.remove      = BuiltInFunction("remove")
 BuiltInFunction.extend      = BuiltInFunction("extend")
-BuiltInFunction.len         = BuiltInFunction("len")
+BuiltInFunction.length      = BuiltInFunction("length")
 BuiltInFunction.run         = BuiltInFunction("run")
 
 # Interpreter
@@ -627,9 +651,10 @@ global_symbol_table.set("IS_STR", BuiltInFunction.is_string)
 global_symbol_table.set("IS_LIST", BuiltInFunction.is_list)
 global_symbol_table.set("IS_FUN", BuiltInFunction.is_function)
 global_symbol_table.set("APPEND", BuiltInFunction.append)
-global_symbol_table.set("POP", BuiltInFunction.pop)
+global_symbol_table.set("INSERT", BuiltInFunction.insert)
+global_symbol_table.set("REMOVE", BuiltInFunction.remove)
 global_symbol_table.set("EXTEND", BuiltInFunction.extend)
-global_symbol_table.set("LEN", BuiltInFunction.len)
+global_symbol_table.set("LENGTH", BuiltInFunction.length)
 global_symbol_table.set("RUN", BuiltInFunction.run)
 
 def run(fn, text):

@@ -1,6 +1,7 @@
 Things to keep in mind for later, just incase I forget to account for it: 
 
 Variables: 
+ - Change assignment operator to arrow or this: <-
  - including expressions when assigning a variable gives an error. Ex: VAR a = (5 + 6) gives an error saying it can't convert '6)' into an int. 
  - You can declare variables while declaring other variables. Ex: VAR a = VAR b = 7 gives both 'a' and 'b' the value 7. This works without the keyword 'VAR' too. 
 
@@ -51,6 +52,7 @@ Built-in Functions:
  - EXTEND
 
  - Change all these functions so that it matches the CSP reference sheet. Maybe remove some
+ - Test all the built-in functions
 
 Comments: 
  - in skip_comment(), if a comment is on a single line with no new line, then while loop will keep calling advance() indefinitely since no new line found
