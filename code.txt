@@ -1,6 +1,6 @@
 a = "yes"
 
-IF (NOT 3 == 7) {
+REPEAT 2 TIMSE{
   DISPLAY(RANDOM(4, 8))
   DISPLAY(a)
 }

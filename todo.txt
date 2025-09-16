@@ -38,20 +38,7 @@ List:
  - Fix lists not working with comparisn operators
 
 Built-in Functions: 
- - PRINT
- - PRINT_RET
- - INPUT
- - INPUT_INT
- - CLEAR
- - IS_NUMBER
- - IS_STRING
- - IS_LIST
- - IS_FUNCTION
- - APPEND
- - POP
- - EXTEND
-
- - Change all these functions so that it matches the CSP reference sheet. Maybe remove some
+ - Check if we want input_int (removed), or add int() function, or auto convert to int if possible. 
  - Test all the built-in functions
 
 Comments: 

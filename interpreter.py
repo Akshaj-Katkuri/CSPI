@@ -120,25 +120,10 @@ class BuiltInFunction(BaseFunction):
         return RunTimeResult().success(Number.null)
     execute_display.arg_names = ["value"]
 
-    def execute_print_return(self, exec_context): 
-        return RunTimeResult().success(String(str(exec_context.symbol_table.get('value'))))
-    execute_print_return.arg_names = ["value"]
-
     def execute_input(self, exec_context): #TODO: Maybe make this fancier with string argument?
         text = input()
         return RunTimeResult().success(String(text))
     execute_input.arg_names = []
-
-    def execute_input_int(self, exec_context): #TODO: Maybe make this fancier with string argument too?
-        while True:
-            text = input()
-            try: 
-                number = int(text)
-                break
-            except ValueError: 
-                print(f"'{text}' mus be an integer. Try again!") #TODO: get rid of this and replace with error too?
-        return RunTimeResult().success(Number(text))
-    execute_input_int.arg_names = []
 
     def execute_random(self, exec_context):
         min_value = exec_context.symbol_table.get('min_value')
@@ -165,26 +150,6 @@ class BuiltInFunction(BaseFunction):
         os.system('cls' if os.name == 'nt' else 'clear')
         return RunTimeResult().success(Number.null)
     execute_clear.arg_names = []
-
-    def execute_is_number(self, exec_context): 
-        is_number = isinstance(exec_context.symbol_table.get('value'), Number)
-        return RunTimeResult().success(Number.true if is_number else Number.false)
-    execute_is_number.arg_names = ['value']
-
-    def execute_is_string(self, exec_context): 
-        is_string = isinstance(exec_context.symbol_table.get('value'), String)
-        return RunTimeResult().success(Number.true if is_string else Number.false)
-    execute_is_string.arg_names = ['value']
-
-    def execute_is_list(self, exec_context): 
-        is_list = isinstance(exec_context.symbol_table.get('value'), List)
-        return RunTimeResult().success(Number.true if is_list else Number.false)
-    execute_is_list.arg_names = ['value']
-
-    def execute_is_function(self, exec_context): 
-        is_function = isinstance(exec_context.symbol_table.get('value'), BaseFunction)
-        return RunTimeResult().success(Number.true if is_function else Number.false)
-    execute_is_function.arg_names = ['value']
 
     def execute_append(self, exec_context): 
         list_ = exec_context.symbol_table.get('list')
@@ -253,28 +218,6 @@ class BuiltInFunction(BaseFunction):
         return RunTimeResult().success(element)
     execute_remove.arg_names = ['list', 'index']
 
-    def execute_extend(self, exec_context):
-        listA = exec_context.symbol_table.get('listA')
-        listB = exec_context.symbol_table.get('listB')
-
-        if not isinstance(listA, List): 
-            return RunTimeResult().failure(RunTimeError( #TODO: Change to syntax error maybe?
-                self.pos_start, self.pos_end,
-                "First argument must be a list", 
-                exec_context
-            ))
-        
-        if not isinstance(listB, List): 
-            return RunTimeResult().failure(RunTimeError( #TODO: Change to syntax error maybe?
-                self.pos_start, self.pos_end,
-                "Second argument must be a list", 
-                exec_context
-            ))
-        
-        listA.elements.extend(listB.elements)
-        return RunTimeResult().success(Number.null)
-    execute_extend.arg_names = ['listA', 'listB']
-
     def execute_length(self, exec_context): 
         list_ = exec_context.symbol_table.get('list')
 
@@ -323,19 +266,12 @@ class BuiltInFunction(BaseFunction):
     execute_run.arg_names = ['fn']
 
 BuiltInFunction.display     = BuiltInFunction("display")
-BuiltInFunction.print_ret   = BuiltInFunction("print_ret")
 BuiltInFunction.input       = BuiltInFunction("input")
-BuiltInFunction.input_int   = BuiltInFunction("input_int")
 BuiltInFunction.random      = BuiltInFunction("random")
 BuiltInFunction.clear       = BuiltInFunction("clear")
-BuiltInFunction.is_number   = BuiltInFunction("is_number")
-BuiltInFunction.is_string   = BuiltInFunction("is_string")
-BuiltInFunction.is_list     = BuiltInFunction("is_list")
-BuiltInFunction.is_function = BuiltInFunction("is_function")
 BuiltInFunction.append      = BuiltInFunction("append")
 BuiltInFunction.insert      = BuiltInFunction("insert")
 BuiltInFunction.remove      = BuiltInFunction("remove")
-BuiltInFunction.extend      = BuiltInFunction("extend")
 BuiltInFunction.length      = BuiltInFunction("length")
 BuiltInFunction.run         = BuiltInFunction("run")
 
@@ -640,20 +576,12 @@ global_symbol_table.set("NULL", Number.null)
 global_symbol_table.set("TRUE", Number.true)
 global_symbol_table.set("FALSE", Number.false) #TODO: Maybe add pi
 global_symbol_table.set("DISPLAY", BuiltInFunction.display)
-global_symbol_table.set("PRINT_RET", BuiltInFunction.print_ret)
 global_symbol_table.set("INPUT", BuiltInFunction.input)
-global_symbol_table.set("INPUT_INT", BuiltInFunction.input_int)
 global_symbol_table.set("RANDOM", BuiltInFunction.random)
 global_symbol_table.set("CLEAR", BuiltInFunction.clear)
-global_symbol_table.set("CLS", BuiltInFunction.clear)
-global_symbol_table.set("IS_NUM", BuiltInFunction.is_number)
-global_symbol_table.set("IS_STR", BuiltInFunction.is_string)
-global_symbol_table.set("IS_LIST", BuiltInFunction.is_list)
-global_symbol_table.set("IS_FUN", BuiltInFunction.is_function)
 global_symbol_table.set("APPEND", BuiltInFunction.append)
 global_symbol_table.set("INSERT", BuiltInFunction.insert)
 global_symbol_table.set("REMOVE", BuiltInFunction.remove)
-global_symbol_table.set("EXTEND", BuiltInFunction.extend)
 global_symbol_table.set("LENGTH", BuiltInFunction.length)
 global_symbol_table.set("RUN", BuiltInFunction.run)
 
