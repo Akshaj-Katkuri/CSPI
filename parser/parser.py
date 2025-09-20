@@ -534,7 +534,7 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected ']', 'VAR', int, float, identifier, '+', '-', '[', or '('" #TODO: Add keywords and double check error message if keywords needed
+                "Expected ']', int, float, identifier, '+', '-', '[', or '('" #TODO: Add keywords and double check error message if keywords needed
             ))
 
         while self.current_token.type == TYPE_COMMA: 
@@ -643,7 +643,7 @@ class Parser:
                 arg_nodes.append(result.register(self.expr()))
                 if result.error: 
                     return result.failure(InvalidSyntaxError(
-                        "Expected ')', 'VAR', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords. don't copy paste cus this also has ')' in the beginning. 
+                        "Expected ')', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords. don't copy paste cus this also has ')' in the beginning. 
                     ))
                 
                 while self.current_token.type == TYPE_COMMA: 
@@ -710,31 +710,6 @@ class Parser:
 
     def expr(self): 
         result = ParseResult()
-
-        if self.current_token.matches(TYPE_KEYWORD, 'VAR'):
-            result.register_advancement()
-            self.advance()
-
-            if self.current_token.type != TYPE_IDENTIFIER:
-                return result.failure(InvalidSyntaxError(
-                    self.current_token.pos_start, self.current_token.pos_end, "Expected identifier"
-                ))
-            
-            var_name = self.current_token
-            result.register_advancement()
-            self.advance()
-
-            if self.current_token.type != TYPE_EQ:
-                return result.failure(InvalidSyntaxError(
-                    self.current_token.pos_start, self.current_token.pos_end, "Expected '='" #TODO: Change this to left arrow later
-                ))
-            
-            result.register_advancement()
-            self.advance()
-
-            expr = result.register(self.expr())
-            if result.error: return result
-            return result.success(VariableAssignNode(var_name, expr))
         
         if self.current_token.type == TYPE_IDENTIFIER and self.get_next_token().type == TYPE_EQ: 
             var_name = self.current_token
@@ -754,7 +729,7 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end,
-                "Expected 'VAR', 'IF', 'WHILE', FOR', 'PROCEDURE', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords
+                "Expected 'IF', 'WHILE', FOR', 'PROCEDURE', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords
             ))
         
         return result.success(node)
@@ -786,7 +761,7 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 pos_start=pos_start, pos_end=self.current_token.pos_end.copy(),
-                details="Expected 'RETURN', 'CONTINUE', 'BREAK', 'VAR', 'IF', 'WHILE', FOR', 'PROCEDURE', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords
+                details="Expected 'RETURN', 'CONTINUE', 'BREAK', 'IF', 'WHILE', FOR', 'PROCEDURE', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords
             ))
         
         return result.success(expr)
