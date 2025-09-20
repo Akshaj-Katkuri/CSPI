@@ -10,13 +10,11 @@ Types:
  - Support for boolean types with logical operators
  - Change default symbol tables for 'TRUE' and 'FALSE' to boolean instead of Number object
 
-Printing: 
- - Randomly prints 0 after each run
-
 Error: 
  - Bad error messages for comparisn expressions
  - Bad error message when this: a + +
  - Bad error messages throughout rlly
+ - Very rare incorrect error message: when you use statements in an expr (ex: repeat-expr), and you have multiple lines and the error is in later lines, incorrect error message. But the line is correct though. 
 
 WHILE and FOR loops: 
  - Currently FOR and WHILE loops return list by default. Check if we want to change that.
