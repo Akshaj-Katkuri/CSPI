@@ -26,7 +26,7 @@ class Lexer:
                 self.advance()
             elif self.current_char == '#':
                 self.skip_comment()
-            elif self.current_char in ';\n':
+            elif self.current_char in '\n':
                 tokens.append(Token(TYPE_NEWLINE, pos_start=self.pos))
                 self.advance()
             elif self.current_char.isdigit(): 
@@ -43,7 +43,7 @@ class Lexer:
                     pos_start = self.pos.copy()
                     self.advance()
                     self.advance()
-                    tokens.append(Token(TYPE_ARROW, '**', pos_start=pos_start, pos_end=self.pos)) #TODO: Verify this pos for end and start
+                    tokens.append(Token(TYPE_ARROW, '**', pos_start=pos_start, pos_end=self.pos))
                 else: 
                     tokens.append(Token(TYPE_MINUS, pos_start=self.pos))
                     self.advance()
@@ -52,7 +52,7 @@ class Lexer:
                     pos_start = self.pos.copy()
                     self.advance()
                     self.advance()
-                    tokens.append(Token(TYPE_POW, '**', pos_start=pos_start, pos_end=self.pos)) #TODO: Verify this pos for end and start
+                    tokens.append(Token(TYPE_POW, '**', pos_start=pos_start, pos_end=self.pos))
                 else: 
                     tokens.append(Token(TYPE_MUL, pos_start=self.pos))
                     self.advance()

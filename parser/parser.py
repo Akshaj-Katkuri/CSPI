@@ -479,17 +479,6 @@ class Parser:
             
         result.register_advancement()
         self.advance()
-
-        if self.current_token.type == TYPE_ARROW: 
-            result.register_advancement()
-            self.advance()
-
-            body_node = result.register(self.expr())
-            if result.error: return result
-
-            return result.success(FunctionDefinitionNode(
-                var_name_token=var_name_token, arg_name_tokens=arg_name_tokens, body_node=body_node, should_auto_return=True
-            ))
         
         while self.current_token.type == TYPE_NEWLINE: 
             result.register_advancement()
@@ -498,7 +487,7 @@ class Parser:
         if self.current_token.type != TYPE_LCURL:
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected '->' or '{'" #TODO: Remove arrow after removing arrow
+                "Expected '{'"
             ))
 
         result.register_advancement()
