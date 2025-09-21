@@ -534,7 +534,7 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected ']', int, float, identifier, '+', '-', '[', or '('" #TODO: Add keywords and double check error message if keywords needed
+                "Expected ']', int, float, identifier, '+', '-', '*', '/', '[', or '('"
             ))
 
         while self.current_token.type == TYPE_COMMA: 
@@ -624,8 +624,10 @@ class Parser:
             result.register_advancement() # Fake registering advancement, so this error isn't overwritten during propogation
             return result.failure(EndOfFile(token.pos_start, token.pos_end, "Reached end of file"))
 
-        return result.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, '[', '(', 'IF', 'FOR', 'WHILE', 'PROCEDURE'"))
-    
+        return result.failure(InvalidSyntaxError(
+            token.pos_start, token.pos_end, "Expected int, float, identifier, '+', '-', '[', '(', 'IF', 'FOR', 'WHILE', 'PROCEDURE'"
+        ))
+
     def call(self): 
         result = ParseResult()
         atom = result.register(self.atom())
@@ -643,7 +645,7 @@ class Parser:
                 arg_nodes.append(result.register(self.expr()))
                 if result.error: 
                     return result.failure(InvalidSyntaxError(
-                        "Expected ')', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords. don't copy paste cus this also has ')' in the beginning. 
+                        "Expected ')', int, float, identifier, '+', '-', '[', '(', or 'NOT'" #TODO: change this error to have keywords. don't copy paste cus this also has ')' in the beginning. 
                     ))
                 
                 while self.current_token.type == TYPE_COMMA: 
@@ -703,9 +705,9 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected int, float, identifier, '+', '-', '(', '[', or 'NOT")
-            )
-        
+                "Expected int, float, identifier, '+', '-', '(', '[', or 'NOT')" #TODO: add keywords
+            ))
+
         return result.success(node)
 
     def expr(self): 
@@ -729,7 +731,7 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end,
-                "Expected 'IF', 'WHILE', FOR', 'PROCEDURE', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords
+                "Expected 'IF', 'WHILE', FOR', 'PROCEDURE', int, float, identifier, '+', '-', '[', '(', or 'NOT'"
             ))
         
         return result.success(node)
@@ -761,7 +763,7 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 pos_start=pos_start, pos_end=self.current_token.pos_end.copy(),
-                details="Expected 'RETURN', 'CONTINUE', 'BREAK', 'IF', 'WHILE', FOR', 'PROCEDURE', int, float, identifier, '+', '-', '[', or '('" #TODO: change this error to have keywords
+                details="Expected 'RETURN', 'CONTINUE', 'BREAK', 'IF', 'WHILE', FOR', 'PROCEDURE', int, float, identifier, '+', '-', '[', '(', or 'NOT'"
             ))
         
         return result.success(expr)
@@ -799,13 +801,10 @@ class Parser:
                         self.advance()
                     if self.current_token.type == TYPE_EOF:
                         statement = None
-                        # result.error = None
                     else: 
                         return result
             else: 
                 statement = result.try_register(self.statement())
-            
-            # if result.error: return result
             
             if not statement: 
                 self.reverse(result.to_reverse_count) 
