@@ -349,7 +349,8 @@ class Parser:
             self.advance()
 
             body = result.register(self.statements())
-            if result.error: return result
+            if result.error: 
+                return result
 
             if self.current_token.type != TYPE_RCURL: 
                 return result.failure(InvalidSyntaxError(
@@ -805,7 +806,15 @@ class Parser:
                         return result
             else: 
                 statement = result.try_register(self.statement())
-            
+                # if result.error and not isinstance(result.error, EndOfFile): 
+                #     if result.last_registered_advance_count != 0: 
+                #         return result
+                #     else: 
+                #         statement = None
+                # elif isinstance(result.error, EndOfFile):
+                #     statement = None
+                #     result.error = None
+
             if not statement: 
                 self.reverse(result.to_reverse_count) 
                 more_statements = False

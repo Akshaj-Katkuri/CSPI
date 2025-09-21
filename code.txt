@@ -1,7 +1,6 @@
 a = "yes"
 
-REPEAT 2 TIMES{
+REPEAT 1 TIMES{
   DISPLAY(a)
-  DISPLAY("TEST"
-  DISPLAY("yes")
+  DISPLAY(a)
 }
