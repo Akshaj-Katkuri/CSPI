@@ -535,7 +535,7 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, 
-                "Expected ']', int, float, identifier, '+', '-', '*', '/', '[', or '('"
+                "Expected ']', int, float, identifier, expression, '[', or '('"
             ))
 
         while self.current_token.type == TYPE_COMMA: 
@@ -626,7 +626,7 @@ class Parser:
             return result.failure(EndOfFile(token.pos_start, token.pos_end, "Reached end of file"))
 
         return result.failure(InvalidSyntaxError(
-            token.pos_start, token.pos_end, "Expected int, float, identifier, '+', '-', '[', '(', 'IF', 'FOR', 'WHILE', 'PROCEDURE'"
+            token.pos_start, token.pos_end, "Expected int, float, identifier, '[', '(', or expression"
         ))
 
     def call(self): 
@@ -646,7 +646,7 @@ class Parser:
                 arg_nodes.append(result.register(self.expr()))
                 if result.error: 
                     return result.failure(InvalidSyntaxError(
-                        "Expected ')', int, float, identifier, '+', '-', '[', '(', or 'NOT'" #TODO: change this error to have keywords. don't copy paste cus this also has ')' in the beginning. 
+                        "Expected ')', int, float, identifier, or expression"
                     ))
                 
                 while self.current_token.type == TYPE_COMMA: 
@@ -732,7 +732,7 @@ class Parser:
         if result.error: 
             return result.failure(InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end,
-                "Expected 'IF', 'WHILE', FOR', 'PROCEDURE', int, float, identifier, '+', '-', '[', '(', or 'NOT'"
+                "Expected int, float, identifier, '+', '-', '[', '(', or 'NOT'"
             ))
         
         return result.success(node)
@@ -779,7 +779,14 @@ class Parser:
             self.advance()
 
         statement = result.register(self.statement())
-        if result.error: return result
+        if result.error: 
+            if isinstance(result.error, EndOfFile) and initial:
+                result.last_registered_advance_count = 0
+                return result.failure(InvalidSyntaxError(
+                    result.error.pos_start, result.error.pos_end,
+                    "Expected 'int, float, identifier, procedure call, or expression'"
+                ))
+            return result
         statements.append(statement)
 
         more_statements = True

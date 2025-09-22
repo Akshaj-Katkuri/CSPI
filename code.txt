@@ -1,6 +1,5 @@
-a = "yes"
+a = 5
 
-REPEAT 1 TIMES{
-  DISPLAY(a)
+REPEAT 1 TIMES {
   DISPLAY(a)
 }
