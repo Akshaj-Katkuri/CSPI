@@ -19,7 +19,8 @@ This project is an interpreter for the pseudocode used in AP Computer Science cl
 
 1. Head over to the releases page.
 2. Download the zip file corresponding to your operating system.
-3. TBD
+3. Extract/Unzip the file to a desired location.
+4. Open the foler and run the .exe file. 
 
 
 ## 🚀 Usage
