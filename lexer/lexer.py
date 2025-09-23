@@ -87,10 +87,13 @@ class Lexer:
                 token, error = self.make_not_equals()
                 if error: return [], error
                 tokens.append(token)
-            elif self.current_char == '=': #TODO: Change this to accept ← or <- for assignment operator
+            elif self.current_char == '=':
                 token, error = self.make_equals()
                 if error: return [], error
                 tokens.append(token)
+            elif self.current_char == '←':
+                tokens.append(Token(TYPE_EQ, pos_start=self.pos))
+                self.advance()
             elif self.current_char == '<': 
                 token, error = self.make_less_than()
                 if error: return [], error
@@ -223,6 +226,9 @@ class Lexer:
         if self.current_char == '=': 
             self.advance()
             token_type = TYPE_LTE
+        elif self.current_char == '-':
+            self.advance()
+            token_type = TYPE_EQ
 
         return Token(token_type, pos_start=pos_start, pos_end=self.pos), None
     
