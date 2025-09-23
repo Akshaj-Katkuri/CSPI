@@ -2,25 +2,16 @@
 
 (add your badges here)
 
-> *Your documentation is a direct reflection of your software, so hold it to the same standards.*
-
+## ℹ️ Overview
+This project is an interpreter for the pseudocode used in AP Computer Science classes. It was designed to help both teachers and students practice with the pseudocode in a more interactive way, making exam preparation easier and more engaging. The interpreter is still in beta, so you may encounter bugs. If you do find anyt, please feel free to create an issue to report them. Future updates will include cleaner documentation and more bug fixes. For now, this README will guide you through setup and classroom use, so I would highly recommend you read this thoroughly. 
 
 ## 🌟 Highlights
 
-- Runs pseudocode from AP Computer Science Classes
-- Cross-Platform: Supports Windows, Mac, or Linux
-- Can help teachers or students prepare for tests
-
-
-## ℹ️ Overview
-
-I'm a high school student who previously took the AP CSP class. After talking with my teacher, I found out we used Python in class since it closely matches the syntax. 
-
-
-### ✍️ Authors
-
-Mention who you are and link to your GitHub or organization's website.
-
+ - Runs pseudocode used in AP Computer Science classes
+ - Simple setup and easy to use
+ - Provides error messages for debugging
+ - Suitable for teaching, classroom practice, and exam preparation
+ - Robot feature coming soon
 
 ## 🚀 Usage
 
