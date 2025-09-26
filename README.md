@@ -33,7 +33,7 @@ This project is an interpreter for the pseudocode used in AP Computer Science cl
 
 ## Syntax/Documentation
 
-Although most of the syntax is similar to the one in the College Board's [reference sheet](https://apcentral.collegeboard.org/media/pdf/ap-computer-science-principles-exam-reference-sheet.pdf), there are a few additional things for convenience. 
+Although most of the syntax is similar to the one in the College Board's [reference sheet](https://apcentral.collegeboard.org/media/pdf/ap-computer-science-principles-exam-reference-sheet.pdf), there are a few additional things for convenience. If something isn't mentioned here, you can assume it follows the reference sheet. 
 
 ### Variables
  - You can copy & paste the assignment operator from the reference sheet ```←```, or you can just type ```<-``` (less than & minus symbol) which works the same way.
