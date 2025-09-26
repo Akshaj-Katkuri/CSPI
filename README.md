@@ -17,25 +17,28 @@ This project is an interpreter for the pseudocode used in AP Computer Science cl
 
 ## ⬇️ Installation
 
-1. Head over to the releases page.
-2. Download the zip file corresponding to your operating system.
-3. Extract/Unzip the file to a desired location.
-4. Open the foler and run the .exe file. 
+1. Head over to the [releases](https://github.com/Akshaj-Katkuri/CSPPI/releases) page.
+2. Select the latest release version. 
+3. Download the CSPPI .zip file
+4. Extract/Unzip the file to a desired location.
 
 
 ## 🚀 Usage
 
-*Show off what your software looks like in action! Try to limit it to one-liners if possible and don't delve into API specifics.*
-
-```py
->>> import mypackage
->>> mypackage.do_stuff()
-'Oh yeah!'
-```
+1. In the CSPPI folder, run main.exe.
+2. You can now type a line of code in the terminal.
+3. To run a file of code, edit the code.txt file and enter the command: ```RUN("code.txt")```
+4. You may also create another .txt file in the same folder and run the same command with the name of the text file as a parameter. 
 
 
-## 💭 Feedback and Contributing
+## Syntax/Documentation
 
-Add a link to the Discussions tab in your repo and invite users to open issues for bugs/feature requests.
+Although most of the syntax is similar to the one in the College Board's [reference sheet](https://apcentral.collegeboard.org/media/pdf/ap-computer-science-principles-exam-reference-sheet.pdf), there are a few additional things for convenience. 
 
-This is also a great place to invite others to contribute in any ways that make sense for your project. Point people to your DEVELOPMENT and/or CONTRIBUTING guides if you have them.
+### Variables
+ - You can copy & paste the assignment operator from the reference sheet ```←```, or you can just type ```<-``` (less than & minus symbol) which works the same way.
+ - For convenience, you can also just use the ```=``` sign.
+
+### Built-In Procedures
+In addition to the built-in procedures mentioned in the reference sheet (e.g. DISPLAY(), INPUT()) you can also use these.
+ - ```CLEAR()``` This clears the console. 
