@@ -30,6 +30,7 @@ This project is an interpreter for the pseudocode used in AP Computer Science cl
 3. To run a file of code, edit the code.txt file and enter the command: ```RUN("code.txt")```
 4. You may also create another .txt file in the same folder and run the same command with the name of the text file as a parameter. 
 
+You can also find a visual representation here: https://youtu.be/AwhmLus5d34 
 
 ## Syntax/Documentation
 
@@ -41,4 +42,7 @@ Although most of the syntax is similar to the one in the College Board's [refere
 
 ### Built-In Procedures
 In addition to the built-in procedures mentioned in the reference sheet (e.g. DISPLAY(), INPUT()) you can also use these.
- - ```CLEAR()``` This clears the console. 
+ - ```CLEAR()``` This procedure clears the console.
+
+### Robot
+This feature is coming very soon!
