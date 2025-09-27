@@ -7,7 +7,7 @@
 
 
 ## ℹ️ Overview
-This project is an interpreter for the pseudocode used in AP Computer Science classes. It was designed to help both teachers and students practice with the pseudocode in a more interactive way, making exam preparation easier and more engaging. The interpreter is still in beta, so you may encounter bugs. If you do find anyt, please feel free to create an issue to report them. Future updates will include cleaner documentation and more bug fixes. For now, this README will guide you through setup and classroom use, so I would highly recommend you read this thoroughly. 
+This project is an interpreter for the pseudocode used in AP Computer Science classes. It was designed to help both teachers and students practice with the pseudocode in a more interactive way, making exam preparation easier and more engaging. There may be some bugs in the program, so if you do find any, please feel free to create an issue to report them. This README will guide you through setup, usage, and some additional info about the syntax, so I would highly recommend you read through this thoroughly. 
 
 
 ## 🌟 Highlights
