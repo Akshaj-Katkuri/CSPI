@@ -1,6 +1,10 @@
 # 📦 My Package
 
-(add your badges here)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/Akshaj-Katkuri/CSPPI)
+![GitHub all releases](https://img.shields.io/github/downloads/Akshaj-Katkuri/CSPPI/total)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Python](https://img.shields.io/badge/python-3.9%2B-blue)
+
 
 ## ℹ️ Overview
 This project is an interpreter for the pseudocode used in AP Computer Science classes. It was designed to help both teachers and students practice with the pseudocode in a more interactive way, making exam preparation easier and more engaging. The interpreter is still in beta, so you may encounter bugs. If you do find anyt, please feel free to create an issue to report them. Future updates will include cleaner documentation and more bug fixes. For now, this README will guide you through setup and classroom use, so I would highly recommend you read this thoroughly. 
