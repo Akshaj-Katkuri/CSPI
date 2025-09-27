@@ -46,3 +46,12 @@ In addition to the built-in procedures mentioned in the reference sheet (e.g. DI
 
 ### Robot
 This feature is coming very soon!
+
+
+## License
+
+This project is licensed under the MIT License.  
+See the [LICENSE](https://github.com/Akshaj-Katkuri/CSPPI/blob/main/LICENSE.md) file for full details.  
+
+If you use or distribute this project, please retain the following copyright notice:  
+Copyright (c) 2025 Akshaj Katkuri
