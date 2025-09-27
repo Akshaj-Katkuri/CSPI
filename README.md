@@ -39,15 +39,12 @@ You can also find a visual representation here: https://youtu.be/AwhmLus5d34
 ## Syntax/Documentation
 
 Although most of the syntax is similar to the one in the College Board's [reference sheet](https://apcentral.collegeboard.org/media/pdf/ap-computer-science-principles-exam-reference-sheet.pdf), there are a few additional things for convenience. If something isn't mentioned here, you can assume it follows the reference sheet. 
-
 ### Variables
  - You can copy & paste the assignment operator from the reference sheet ```←```, or you can just type ```<-``` (less than & minus symbol) which works the same way.
  - For convenience, you can also just use the ```=``` sign.
-
 ### Built-In Procedures
 In addition to the built-in procedures mentioned in the reference sheet (e.g. DISPLAY(), INPUT()) you can also use these.
  - ```CLEAR()``` This procedure clears the console.
-
 ### Robot
 This feature is coming very soon!
 
