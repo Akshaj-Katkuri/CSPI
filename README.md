@@ -7,7 +7,7 @@
 
 
 ## ℹ️ Overview
-This project is an interpreter for the pseudocode used in AP Computer Science classes. It was designed to help both teachers and students practice with the pseudocode in a more interactive way, making exam preparation easier and more engaging. There may be some bugs in the program, so if you do find any, please feel free to create an issue to report them. This README will guide you through setup, usage, and some additional info about the syntax, so I would highly recommend you read through this thoroughly. 
+Computer Science Principles Pseudocode Interpreter (CSPPI) is an interpreter for the pseudocode used in AP Computer Science classes. This tool can help both teachers and students practice with the pseudocode in a more interactive way, making exam preparation easier and more engaging. There may be some bugs in the program, so if you do find any, please feel free to create an issue to report them. This README will guide you through setup, usage, and some additional info about the syntax, so I would highly recommend you read through this thoroughly. 
 
 
 ## 🌟 Highlights
