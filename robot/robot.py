@@ -150,4 +150,4 @@ def TURN_LEFT(path: str = "grid.json") -> str:
 
 def start():
     """Compatibility helper that starts the editor then runner with default names."""
-    return create_grid()
+    return CREATE_GRID()

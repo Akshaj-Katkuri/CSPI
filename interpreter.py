@@ -10,6 +10,8 @@ from parser.nodes import *
 from lexer.lexer import Lexer
 from parser.parser import Parser
 
+from robot import robot
+
 class BaseFunction(Value): 
     def __init__(self, name):
         super().__init__()
@@ -231,6 +233,10 @@ class BuiltInFunction(BaseFunction):
         return RunTimeResult().success(Number(len(list_.elements)))
     execute_length.arg_names = ['list']
 
+    def execute_create_grid(self, exec_context):
+        robot.CREATE_GRID()
+        return RunTimeResult().success(Number.null)
+
     def execute_run(self, exec_context): 
         fn = exec_context.symbol_table.get('fn')
 
@@ -273,6 +279,7 @@ BuiltInFunction.append      = BuiltInFunction("append")
 BuiltInFunction.insert      = BuiltInFunction("insert")
 BuiltInFunction.remove      = BuiltInFunction("remove")
 BuiltInFunction.length      = BuiltInFunction("length")
+BuiltInFunction.create_grid = BuiltInFunction("create_grid")
 BuiltInFunction.run         = BuiltInFunction("run")
 
 # Interpreter
@@ -583,6 +590,7 @@ global_symbol_table.set("APPEND", BuiltInFunction.append)
 global_symbol_table.set("INSERT", BuiltInFunction.insert)
 global_symbol_table.set("REMOVE", BuiltInFunction.remove)
 global_symbol_table.set("LENGTH", BuiltInFunction.length)
+global_symbol_table.set("CREATE_GRID", BuiltInFunction.create_grid)
 global_symbol_table.set("RUN", BuiltInFunction.run)
 
 def run(fn, text):
