@@ -236,6 +236,7 @@ class BuiltInFunction(BaseFunction):
     def execute_create_grid(self, exec_context):
         robot.CREATE_GRID()
         return RunTimeResult().success(Number.null)
+    execute_create_grid.arg_names = []
 
     def execute_run(self, exec_context): 
         fn = exec_context.symbol_table.get('fn')
