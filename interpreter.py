@@ -10,7 +10,7 @@ from parser.nodes import *
 from lexer.lexer import Lexer
 from parser.parser import Parser
 
-from robot import robot
+# from robot import robot
 
 class BaseFunction(Value): 
     def __init__(self, name):
@@ -234,7 +234,8 @@ class BuiltInFunction(BaseFunction):
     execute_length.arg_names = ['list']
 
     def execute_create_grid(self, exec_context):
-        robot.CREATE_GRID()
+        # robot.CREATE_GRID()
+        print("not yet implemented")
         return RunTimeResult().success(Number.null)
     execute_create_grid.arg_names = []
 
