@@ -224,6 +224,8 @@ def place_item(row, col):
 
 
 # --- Runner startup ---
+print(f"grid_runner: started pid={os.getpid()}")
+
 def ensure_grid_created(path="grid.json"):
     """Ensure grid.json exists and contains at least one non-empty cell (wall/goal/turtle).
     If not, run the grid maker (grid_maker.py) to create it, then reload.
@@ -269,24 +271,11 @@ def ensure_grid_created(path="grid.json"):
                 need_maker = True
 
         if need_maker:
-            print("No grid data found — launching grid_maker.py to create a grid...")
-            # Prefer importing and running the editor in-process. Fall back to subprocess if that fails.
-            try:
-                try:
-                    # Try package-style import first
-                    from robot.grid_maker import GridEditor
-                except Exception:
-                    # Try local import (when running as a script)
-                    from grid_maker import GridEditor
-
-                editor = GridEditor(path=file_path, rows=GRID_ROWS, cols=GRID_COLS)
-                editor.run()
-            except Exception as e:
-                print("Failed to run grid_maker in-process:", e)
-                try:
-                    subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), "grid_maker.py")], check=False)
-                except Exception as e2:
-                    print("Failed to run grid_maker.py:", e2)
+            # Do not launch the editor from the runner — that can create nested
+            # Pygame event loops or block. The runner is read-only; if a grid
+            # doesn't exist, continue with an empty grid and let the external
+            # editor (creator) be responsible for creating the JSON file.
+            print("No grid data found — continuing with empty grid. Use the editor to create grid.json")
 
         # Reload after maker (or even if maker wasn't run but file changed)
         load_grid_from_json(path)
