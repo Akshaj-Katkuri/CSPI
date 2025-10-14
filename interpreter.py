@@ -124,7 +124,17 @@ class BuiltInFunction(BaseFunction):
 
     def execute_input(self, exec_context): #TODO: Maybe make this fancier with string argument?
         text = input()
-        return RunTimeResult().success(String(text))
+        txt = text.strip()
+        if txt == "":
+            return RunTimeResult().success(String(text))
+
+        try:
+            fval = float(txt)
+            if fval.is_integer():
+                return RunTimeResult().success(Number(int(fval)))
+            return RunTimeResult().success(Number(fval))
+        except Exception:
+            return RunTimeResult().success(String(text))
     execute_input.arg_names = []
 
     def execute_random(self, exec_context):
