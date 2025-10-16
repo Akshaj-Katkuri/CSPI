@@ -26,6 +26,8 @@ Computer Science Pseudocode Interpreter (CSPI) is an interpreter for the pseudoc
 3. Download the CSPPI .zip file
 4. Extract/Unzip the file to a desired location.
 
+You can also find a video tutorial here: TODO
+
 
 ## 🚀 Usage
 
@@ -34,7 +36,12 @@ Computer Science Pseudocode Interpreter (CSPI) is an interpreter for the pseudoc
 3. To run a file of code, edit the code.txt file and enter the command: ```RUN("code.txt")```
 4. You may also create another .txt file in the same folder and run the same command with the name of the text file as a parameter. 
 
-You can also find a visual representation here: https://youtu.be/AwhmLus5d34 
+You can also find a video tutorial here: https://youtu.be/AwhmLus5d34 
+
+
+## Updating/Uninstalling
+
+To update the program, just uninstall and install the latest release (follow instructions above). To uninstall, just delete the folder (CSPI-v#.#.#) that has main.exe in it. You should also delete the zipped folder. You don't need to uninstall the older versions, but it will help keep it organized if you don't have a bunch of copies of the older versions. 
 
 ## Syntax/Documentation
 
