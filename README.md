@@ -45,6 +45,9 @@ Although most of the syntax is similar to the one in the College Board's [refere
 ### Built-In Procedures
 In addition to the built-in procedures mentioned in the reference sheet (e.g. DISPLAY(), INPUT()) you can also use these.
  - ```CLEAR()``` This procedure clears the console.
+### Errors
+Since I'm still working on fixing out all the bugs, there will be bugs. I'm constantly fixing them, so make sure to always stay on the latest release. Here are a few that you might encounter. I will fix these as soon as I can. 
+ - Running an empty .txt file throws an error.
 ### Robot
 This feature is coming very soon!
 
