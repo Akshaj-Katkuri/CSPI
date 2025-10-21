@@ -778,6 +778,13 @@ class Parser:
             result.register_advancement()
             self.advance()
 
+        if initial and self.current_token.type == TYPE_EOF:
+            return result.success(ListNode(
+            statements,
+            pos_start,
+            self.current_token.pos_end.copy()
+        ))
+
         statement = result.register(self.statement())
         if result.error: 
             if isinstance(result.error, EndOfFile) and initial:

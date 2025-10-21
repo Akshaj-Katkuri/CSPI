@@ -1,5 +1,0 @@
-a = 5
-
-REPEAT 1 TIMES {
-  DISPLAY(a)
-}
