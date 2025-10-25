@@ -1,0 +1,11 @@
+a = 5
+b <- 6
+c = 7
+
+PROCEDURE TEST(a, b, c) {
+    DISPLAY(a)
+    DISPLAY(b)
+    DISPLAY(a MOD b)
+}
+
+TEST(a,b,c)
