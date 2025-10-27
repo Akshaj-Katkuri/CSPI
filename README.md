@@ -1,7 +1,6 @@
 # 📦 My Package
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/Akshaj-Katkuri/CSPPI)
-![GitHub all releases](https://img.shields.io/github/downloads/Akshaj-Katkuri/CSPPI/total)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 
