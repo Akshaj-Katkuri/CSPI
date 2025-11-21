@@ -31,6 +31,8 @@ TYPE_EOF = 'EOF'
 
 KEYWORDS = [
     'VAR', 
+    'TRUE',
+    'FALSE',
     'AND', 
     'OR', 
     'NOT', 

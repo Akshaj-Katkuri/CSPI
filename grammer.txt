@@ -23,7 +23,7 @@ power           : call (POW factor)*
 call            : atom (LPAREN (expr (COMMA expr)*)? RPAREN)?
 
 atom            : LPAREN expr RPAREN
-                : INT|FLOAT|STRING|IDENTIFIER
+                : INT|FLOAT|STRING|IDENTIFIER|KEYWORD: TRUE|KEYWORD: FALSE
                 : list-expr
                 : if-expr
                 : for-expr

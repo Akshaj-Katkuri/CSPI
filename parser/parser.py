@@ -559,8 +559,8 @@ class Parser:
         ))
     
     def atom(self): 
-        result = ParseResult()
-        token = self.current_token
+        result: ParseResult = ParseResult()
+        token: Token = self.current_token
 
         if token.type in (TYPE_INT, TYPE_FLOAT): 
             result.register_advancement()
@@ -571,6 +571,18 @@ class Parser:
             result.register_advancement()
             self.advance()
             return result.success(StringNode(token))
+        
+        if token.matches(TYPE_KEYWORD, 'TRUE'): 
+            result.register_advancement()
+            self.advance()
+            token.value = True
+            return result.success(BooleanNode(token))
+        
+        if token.matches(TYPE_KEYWORD, 'FALSE'):
+            result.register_advancement()
+            self.advance()
+            token.value = False
+            return result.success(BooleanNode(token))
         
         elif token.type == TYPE_IDENTIFIER:
             result.register_advancement()
