@@ -1,11 +1,17 @@
-a = 5
-b <- 6
-c = 7
-
-PROCEDURE TEST(a, b, c) {
-    DISPLAY(a)
-    DISPLAY(b)
-    DISPLAY(a MOD b)
+PROCEDURE test(a)
+{
+    REPEAT 5 TIMES
+    {
+        IF (5 <= 10)
+        {
+            DISPLAY(a)
+        } ELSE
+        {
+            DISPLAY("5 is less than 10")
+        }
+    }
 }
 
-TEST(a,b,c)
+DISPLAY("Enter a number: ")
+num = INPUT()
+test(num)
