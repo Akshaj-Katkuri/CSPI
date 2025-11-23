@@ -300,6 +300,11 @@ class Interpreter:
         return RunTimeResult().success(
             Number(node.token.value).set_context(context).set_pos(node.token.pos_start, node.token.pos_end)
             )
+    
+    def visit_BooleanNode(self, node: BooleanNode, context: Context): 
+        return RunTimeResult().success(
+            Boolean(node.token.value).set_context(context).set_pos(node.token.pos_start, node.token.pos_end)
+        )
 
     def visit_StringNode(self, node: StringNode, context: Context): 
         return RunTimeResult().success(
@@ -582,8 +587,6 @@ class Interpreter:
     
 global_symbol_table = SymbolTable()
 global_symbol_table.set("NULL", Number.null)
-global_symbol_table.set("TRUE", Number.true)
-global_symbol_table.set("FALSE", Number.false) #TODO: Maybe add pi
 global_symbol_table.set("DISPLAY", BuiltInFunction.display)
 global_symbol_table.set("INPUT", BuiltInFunction.input)
 global_symbol_table.set("RANDOM", BuiltInFunction.random)

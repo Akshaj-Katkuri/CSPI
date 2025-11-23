@@ -168,6 +168,8 @@ class Number(Value):
     def __repr__(self):
         return str(self.value)
 
+Number.null = Number(0)
+
 class Boolean(Value): 
     def __init__(self, value):
         super().__init__()
