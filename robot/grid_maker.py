@@ -27,14 +27,17 @@ TURTLE = 2
 GOAL = 3
 
 
-class GridEditor:
+class GridMaker:
     """A simple grid editor using pygame.
 
     Use GridEditor(path).run() to start the editor. When run() returns it will
     have exported the grid to the provided path.
     """
 
-    def __init__(self, path="grid.json", rows=DEFAULT_GRID_ROWS, cols=DEFAULT_GRID_COLS):
+    def __init__(self, path="current_grid.json", rows=DEFAULT_GRID_ROWS, cols=DEFAULT_GRID_COLS):
+        # Resolve path relative to robot folder
+        if not os.path.isabs(path):
+            path = os.path.join(os.path.dirname(__file__), path)
         self.path = path
         self.GRID_ROWS = rows
         self.GRID_COLS = cols
@@ -408,9 +411,3 @@ class GridEditor:
         pygame.quit()
         # do not sys.exit() so caller can continue
         return self.path
-
-
-if __name__ == "__main__":
-    editor = GridEditor()
-    editor.run()
-    sys.exit(0)

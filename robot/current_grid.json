@@ -1,0 +1,17 @@
+[
+  [
+    90,
+    "Wall",
+    "Wall"
+  ],
+  [
+    null,
+    null,
+    "Wall"
+  ],
+  [
+    "Goal",
+    null,
+    null
+  ]
+]
