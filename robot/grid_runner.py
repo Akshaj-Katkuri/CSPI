@@ -146,16 +146,22 @@ class GridRunner:
 	def update_display(self):
 		if not self.window_open:
 			raise RuntimeError("Grid window is closed")
-		self.load_grid_from_json()
-		self.screen.fill(WHITE)
-		self.draw_grid()
-		pygame.display.flip()
-		# Process events to keep window responsive
+		
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				self.window_open = False
-				pygame.quit()
 				raise RuntimeError("Grid window closed by user")
+			
+		if self.window_open: 
+			self.load_grid_from_json()
+			self.screen.fill(WHITE)
+			self.draw_grid()
+			pygame.display.flip()
+
+	def close(self): 
+		if self.window_open: 
+			self.window_open = False
+			pygame.quit()
 
 if __name__ == "__main__":
 	runner = GridRunner()
@@ -165,4 +171,5 @@ if __name__ == "__main__":
 			pygame.time.wait(2000)  # update every 2 seconds
 	except RuntimeError as e:
 		print(e)
+		runner.close()
 		sys.exit(0)

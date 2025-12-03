@@ -38,6 +38,10 @@ Built-in Functions:
  - Check if we want input_int (removed), or add int() function, or auto convert to int if possible. 
  - Test all the built-in functions
 
+Robot: 
+ - Throws a small error randomly when you run a command. This is because for a split second as the .json file is being updated, it doesn't have a char for the turtle for a split second in which it gets confused. 
+ 
+
 Comments: 
  - in skip_comment(), if a comment is on a single line with no new line, then while loop will keep calling advance() indefinitely since no new line found
  - in the event that there is a comment that is the only comment in the file with no code following after it, the program detects an empty line as an invalid syntax which throws a confusing error. This error has less to do with the comment function and more to do with the program not ignoring an empty line
