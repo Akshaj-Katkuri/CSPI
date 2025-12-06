@@ -34,7 +34,7 @@ class GridMaker:
     have exported the grid to the provided path.
     """
 
-    def __init__(self, path="current_grid.json", rows=DEFAULT_GRID_ROWS, cols=DEFAULT_GRID_COLS):
+    def __init__(self, path="initial_grid.json", rows=DEFAULT_GRID_ROWS, cols=DEFAULT_GRID_COLS):
         # Resolve path relative to robot folder
         if not os.path.isabs(path):
             path = os.path.join(os.path.dirname(__file__), path)

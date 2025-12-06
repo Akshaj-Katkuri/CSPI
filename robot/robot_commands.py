@@ -78,3 +78,82 @@ class RobotCommands:
         
         except Exception as e:
             print(f"Error moving forward: {e}")
+
+    def turn_left(self, times=1):
+        """Rotate the turtle left (counterclockwise) by 90 degrees per time.
+
+        times: number of 90-degree steps to turn left.
+        """
+        try:
+            with open(self.path, "r") as f:
+                data = json.load(f)
+
+            # find turtle
+            turtle_pos = None
+            turtle_dir_deg = 0
+            for r in range(len(data)):
+                for c in range(len(data[r])):
+                    val = data[r][c]
+                    if isinstance(val, (int, float)):
+                        turtle_pos = (r, c)
+                        turtle_dir_deg = int(val) % 360
+                        break
+                if turtle_pos:
+                    break
+
+            if turtle_pos is None:
+                print("Error: Turtle not found in grid")
+                return
+
+            row, col = turtle_pos
+            # normalize times
+            times = int(times) if times and times > 0 else 1
+            new_deg = (turtle_dir_deg + 90 * times) % 360
+
+            # write back
+            data[row][col] = new_deg
+            with open(self.path, "w") as f:
+                json.dump(data, f, indent=2)
+
+            print(f"Turtle rotated left to {new_deg} degrees")
+        except Exception as e:
+            print(f"Error turning left: {e}")
+
+    def turn_right(self, times=1):
+        """Rotate the turtle right (clockwise) by 90 degrees per time.
+
+        times: number of 90-degree steps to turn right.
+        """
+        try:
+            with open(self.path, "r") as f:
+                data = json.load(f)
+
+            # find turtle
+            turtle_pos = None
+            turtle_dir_deg = 0
+            for r in range(len(data)):
+                for c in range(len(data[r])):
+                    val = data[r][c]
+                    if isinstance(val, (int, float)):
+                        turtle_pos = (r, c)
+                        turtle_dir_deg = int(val) % 360
+                        break
+                if turtle_pos:
+                    break
+
+            if turtle_pos is None:
+                print("Error: Turtle not found in grid")
+                return
+
+            row, col = turtle_pos
+            times = int(times) if times and times > 0 else 1
+            new_deg = (turtle_dir_deg - 90 * times) % 360
+
+            # write back
+            data[row][col] = new_deg
+            with open(self.path, "w") as f:
+                json.dump(data, f, indent=2)
+
+            print(f"Turtle rotated right to {new_deg} degrees")
+        except Exception as e:
+            print(f"Error turning right: {e}")

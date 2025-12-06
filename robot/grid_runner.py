@@ -66,7 +66,6 @@ class GridRunner:
 			self.grid = [[EMPTY for _ in range(self.GRID_COLS)] for _ in range(self.GRID_ROWS)]
 			self.turtle_pos = None
 			self.goal_pos = None
-			self.turtle_dir = 0
 			for r in range(min(len(data), self.GRID_ROWS)):
 				row = data[r]
 				for c in range(min(len(row), self.GRID_COLS)):

@@ -1,23 +1,26 @@
 [
   [
-    null,
-    "Wall",
-    "Wall",
-    "Goal",
-    "Wall"
-  ],
-  [
-    null,
-    90,
+    0,
     null,
     null,
-    "Wall"
+    null
   ],
   [
     null,
     null,
-    "Wall",
-    "Wall",
-    "Wall"
+    null,
+    null
+  ],
+  [
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    null,
+    null,
+    null,
+    null
   ]
 ]

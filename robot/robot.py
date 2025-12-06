@@ -1,5 +1,7 @@
 import threading
 import time
+import os
+import shutil
 
 from grid_runner import GridRunner
 from grid_maker import GridMaker
@@ -16,6 +18,16 @@ class Robot:
         self.making = True
         GridMaker().run()
         self.making = False
+
+        base = os.path.dirname(__file__)
+        src = os.path.join(base, "initial_grid.json")
+        dst = os.path.join(base, "current_grid.json")
+        try:
+            if os.path.exists(src):
+                shutil.copyfile(src, dst)
+        except Exception as e:
+            print(f"Warning: failed to copy initial grid to current_grid.json: {e}")
+
         self.start_grid()
     
     def start_grid(self): 
@@ -42,7 +54,12 @@ class Robot:
     def move_forward(self): 
         self.commands.move_forward()
 
-'''Other code below this for example'''
+    def turn_left(self): 
+        self.commands.turn_left()
+
+    def turn_right(self): 
+        self.commands.turn_right()
+
 
 robot = Robot()
 robot.create_grid()
@@ -51,9 +68,15 @@ control = None
 
 while True: 
     control = int(input("Enter a command: "))
+
+    time.sleep(2)
+
     if control == 1: 
-        time.sleep(2)
         robot.move_forward()
-    if control == 2: 
+    elif control == 2: 
+        robot.turn_left()
+    elif control == 3: 
+        robot.turn_right()
+    elif control == 0: 
         robot.halt()
         break
