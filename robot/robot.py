@@ -33,6 +33,11 @@ class Robot:
         except RuntimeError as e:
             print(f"Grid Runner Error: {e}")
             self.grid_runner.close()
+            self.running = False
+
+    def halt(self): 
+        self.grid_runner.close()
+        self.running = False
 
     def move_forward(self): 
         self.commands.move_forward()
@@ -47,4 +52,8 @@ control = None
 while True: 
     control = int(input("Enter a command: "))
     if control == 1: 
+        time.sleep(2)
         robot.move_forward()
+    if control == 2: 
+        robot.halt()
+        break

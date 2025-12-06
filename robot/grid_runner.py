@@ -35,6 +35,9 @@ class GridRunner:
 		self.turtle_dir = 0
 		self.screen = None
 		self.window_open = False
+
+		self.invalid_json_error_count = 0
+
 		self._init_pygame()
 		self.load_grid_from_json()
 
@@ -83,13 +86,17 @@ class GridRunner:
 					else:
 						self.grid[r][c] = EMPTY
 		except Exception as e:
-			print("Failed to load", path, ":", e)
-			self.grid = [[EMPTY for _ in range(self.GRID_COLS)] for _ in range(self.GRID_ROWS)]
-			self.turtle_pos = None
-			self.goal_pos = None
-			self.turtle_dir = 0
+			if self.invalid_json_error_count > 5: 	# Sometimes when .json is being updated, it throws error, so this to flush them out and get error only when supposed to
+				print("Failed to load", path, ":", e)
+				self.grid = [[EMPTY for _ in range(self.GRID_COLS)] for _ in range(self.GRID_ROWS)]
+				self.turtle_pos = None
+				self.goal_pos = None
+				self.turtle_dir = 0
+				self.invalid_json_error_count = 0
+			else:
+				self.invalid_json_error_count += 1
 
-	def draw_turtle_icon(self, surface, rect, color, direction):
+	def draw_turtle_icon(self, surface, rect: pygame.Rect, color, direction):
 		cx, cy = rect.center
 		pad = int(min(rect.width, rect.height) * 0.3)
 		if pad < 1:
