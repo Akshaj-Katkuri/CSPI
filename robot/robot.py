@@ -60,6 +60,9 @@ class Robot:
     def turn_right(self): 
         self.commands.turn_right()
 
+    def can_move(self, direction) -> bool: 
+        return self.commands.can_move(direction)
+
 
 robot = Robot()
 robot.create_grid()
@@ -77,6 +80,9 @@ while True:
         robot.turn_left()
     elif control == 3: 
         robot.turn_right()
+    elif control == 4: 
+        dir = input("Direction: ").upper()
+        print(robot.can_move(dir))
     elif control == 0: 
         robot.halt()
         break

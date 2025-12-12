@@ -157,3 +157,92 @@ class RobotCommands:
             print(f"Turtle rotated right to {new_deg} degrees")
         except Exception as e:
             print(f"Error turning right: {e}")
+
+    def can_move(self, direction):
+        """Return True if the robot can move one cell in the given relative direction.
+
+        direction is a string: "FORWARD", "BACKWARD", "LEFT" or "RIGHT" (case-insensitive).
+        Movement is blocked by grid bounds or walls. "Goal"/"GOAL" cells are treated as passable.
+        """
+        try:
+            # load grid
+            with open(self.path, "r") as f:
+                data = json.load(f)
+
+            # find turtle position and heading (deg)
+            turtle_pos = None
+            turtle_dir_deg = 0
+            for r in range(len(data)):
+                for c in range(len(data[r])):
+                    val = data[r][c]
+                    if isinstance(val, (int, float)):
+                        turtle_pos = (r, c)
+                        turtle_dir_deg = int(val) % 360
+                        break
+                if turtle_pos:
+                    break
+
+            if turtle_pos is None:
+                return False
+
+            # map relative direction to absolute heading
+            d = (direction or "").strip().upper()
+            if d == "FORWARD":
+                offset = 0
+            elif d == "BACKWARD":
+                offset = 180
+            elif d == "LEFT":
+                offset = 90
+            elif d == "RIGHT":
+                offset = 270
+            else:
+                raise ValueError(f"Unknown direction: {direction}")
+
+            abs_deg = (turtle_dir_deg + offset) % 360
+
+            # convert absolute heading to row/col delta
+            if abs_deg == 0:  # right
+                dr, dc = 0, 1
+            elif abs_deg == 90:  # up
+                dr, dc = -1, 0
+            elif abs_deg == 180:  # left
+                dr, dc = 0, -1
+            elif abs_deg == 270:  # down
+                dr, dc = 1, 0
+            else:
+                # If heading is something unexpected, normalize to nearest 90
+                normalized = (round(abs_deg / 90) * 90) % 360
+                if normalized == 0:
+                    dr, dc = 0, 1
+                elif normalized == 90:
+                    dr, dc = -1, 0
+                elif normalized == 180:
+                    dr, dc = 0, -1
+                else:
+                    dr, dc = 1, 0
+
+            row, col = turtle_pos
+            target_r, target_c = row + dr, col + dc
+
+            # check bounds
+            max_rows = len(data)
+            max_cols = max((len(rw) for rw in data), default=0)
+            if target_r < 0 or target_r >= max_rows or target_c < 0 or target_c >= max_cols:
+                return False
+
+            target_val = data[target_r][target_c]
+
+            # treat walls as blocked. Maker/Runner use "Wall"/"WALL" strings or internal 1 value.
+            if target_val == "WALL" or target_val == 1:
+                return False
+
+            # numeric means occupied by turtle (or other numeric) -> blocked
+            if isinstance(target_val, (int, float)):
+                return False
+
+            # "Goal"/"GOAL" or None are considered passable
+            return True
+
+        except Exception:
+            # On any error, conservatively report not movable
+            return False
