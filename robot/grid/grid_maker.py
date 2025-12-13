@@ -3,6 +3,9 @@ import sys
 import json
 import os
 
+from utils.errors import GridError
+from utils.results import RunTimeResult
+
 
 MAX_SIZE = 10
 MIN_SIZE = 2
@@ -104,9 +107,9 @@ class GridMaker:
                     val = row[c]
                     if val is None:
                         self.grid[r][c] = EMPTY
-                    elif val == "Wall":
+                    elif val == "WALL":
                         self.grid[r][c] = WALL
-                    elif val == "Goal":
+                    elif val == "GOAL":
                         self.grid[r][c] = GOAL
                         self.goal_pos = (r, c)
                     elif isinstance(val, (int, float)):
@@ -133,9 +136,9 @@ class GridMaker:
                 if self.grid[r][c] == EMPTY:
                     row.append(None)
                 elif self.grid[r][c] == WALL:
-                    row.append("Wall")
+                    row.append("WALL")
                 elif self.grid[r][c] == GOAL:
-                    row.append("Goal")
+                    row.append("GOAL")
                 elif self.grid[r][c] == TURTLE:
                     deg = (360 - (self.turtle_dir * 90)) % 360
                     row.append(deg)
@@ -332,6 +335,7 @@ class GridMaker:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                    return RunTimeResult().failure(GridError(details='User closed grid maker'))
 
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     mx, my = pygame.mouse.get_pos()

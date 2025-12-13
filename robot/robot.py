@@ -3,9 +3,11 @@ import time
 import os
 import shutil
 
-from grid_runner import GridRunner
-from grid_maker import GridMaker
-from robot_commands import RobotCommands
+from robot.grid.grid_runner import GridRunner
+from robot.grid.grid_maker import GridMaker
+from robot.robot_commands import RobotCommands
+
+from utils.results import RunTimeResult
 
 class Robot: 
     def __init__(self):
@@ -15,16 +17,22 @@ class Robot:
         self.thread = None
         # Event used to request the loop thread to stop
         self._stop_event = threading.Event()
-        self.commands = RobotCommands("current_grid.json")
+        # JSON files are stored in the `grid` subfolder; pass that relative path
+        self.commands = RobotCommands(os.path.join("grid", "current_grid.json"))
     
     def create_grid(self): 
+        RTresult = RunTimeResult()
+        
         self.making = True
-        GridMaker().run()
+
+        RTresult.register(GridMaker.run())
+        if RTresult.error: return RTresult
+        
         self.making = False
 
         base = os.path.dirname(__file__)
-        src = os.path.join(base, "initial_grid.json")
-        dst = os.path.join(base, "current_grid.json")
+        src = os.path.join(base, "grid", "initial_grid.json")
+        dst = os.path.join(base, "grid", "current_grid.json")
         try:
             if os.path.exists(src):
                 shutil.copyfile(src, dst)
@@ -86,25 +94,26 @@ class Robot:
         return self.commands.can_move(direction)
 
 
-robot = Robot()
-robot.create_grid()
+if __name__ == '__main__': 
+    robot = Robot()
+    robot.create_grid()
 
-control = None
+    control = None
 
-while True: 
-    control = int(input("Enter a command: "))
+    while True: 
+        control = int(input("Enter a command: "))
 
-    time.sleep(2)
+        time.sleep(2)
 
-    if control == 1: 
-        robot.move_forward()
-    elif control == 2: 
-        robot.turn_left()
-    elif control == 3: 
-        robot.turn_right()
-    elif control == 4: 
-        dir = input("Direction: ").upper()
-        print(robot.can_move(dir))
-    elif control == 0: 
-        robot.halt()
-        break
+        if control == 1: 
+            robot.move_forward()
+        elif control == 2: 
+            robot.turn_left()
+        elif control == 3: 
+            robot.turn_right()
+        elif control == 4: 
+            dir = input("Direction: ").upper()
+            print(robot.can_move(dir))
+        elif control == 0: 
+            robot.halt()
+            break

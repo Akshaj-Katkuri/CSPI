@@ -163,7 +163,7 @@ class BuiltInFunction(BaseFunction):
         return RunTimeResult().success(Number.null)
     execute_clear.arg_names = []
 
-    def execute_append(self, exec_context): 
+    def execute_append(self, exec_context: Context): 
         list_ = exec_context.symbol_table.get('list')
         value_ = exec_context.symbol_table.get('value')
 
@@ -243,9 +243,16 @@ class BuiltInFunction(BaseFunction):
         return RunTimeResult().success(Number(len(list_.elements)))
     execute_length.arg_names = ['list']
 
-    def execute_create_grid(self, exec_context):
-        robot.CREATE_GRID()
-        return RunTimeResult().success(Number.null)
+    def execute_create_grid(self, exec_context: Context): #TODO: This sucks make it better
+        RTresult = RunTimeResult()
+
+        RTresult.register(exec_context.robot.create_grid())
+        if RTresult.error: 
+            RTresult.error.pos_start = self.pos_start
+            RTresult.error.pos_end = self.pos_end
+            return RTresult
+
+        return RTresult.success(Number.null)
     execute_create_grid.arg_names = []
 
     def execute_run(self, exec_context): 
