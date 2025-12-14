@@ -25,7 +25,7 @@ class Robot:
         
         self.making = True
 
-        RTresult.register(GridMaker.run())
+        RTresult.register(GridMaker().run())
         if RTresult.error: return RTresult
         
         self.making = False

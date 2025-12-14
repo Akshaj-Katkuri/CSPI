@@ -335,6 +335,7 @@ class GridMaker:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                    pygame.quit()
                     return RunTimeResult().failure(GridError(details='User closed grid maker'))
 
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:

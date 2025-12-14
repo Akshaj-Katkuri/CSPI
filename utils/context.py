@@ -1,13 +1,22 @@
 from utils.position import Position
-from robot.robot import Robot
+
 
 class Context: 
     def __init__(self, display_name, parent=None, parent_entry_pos: Position = None):
         self.display_name = display_name
         self.parent = parent
         self.parent_entry_pos: Position = parent_entry_pos
-        self.symbol_table: SymbolTable = None
-        self.robot: Robot = Robot()
+        self.symbol_table: 'SymbolTable' = None
+        # Delay importing/creating Robot to avoid circular imports. Create on first access.
+        self._robot = None
+
+    @property
+    def robot(self):
+        if self._robot is None:
+            # Local import to avoid circular import at module import time
+            from robot.robot import Robot
+            self._robot = Robot()
+        return self._robot
 
 class SymbolTable:
     def __init__(self, parent=None):
