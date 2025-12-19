@@ -1,5 +1,6 @@
 import os
 import random
+import time
 
 from values import *
 from utils.context import Context, SymbolTable
@@ -255,6 +256,19 @@ class BuiltInFunction(BaseFunction):
         return RTresult.success(Number.null)
     execute_create_grid.arg_names = []
 
+    def execute_move_forward(self, exec_context: Context): 
+        RTresult = RunTimeResult()
+
+        time.sleep(2)
+        RTresult.register(exec_context.robot.move_forward())
+        if RTresult.error: 
+            RTresult.error.pos_start = self.pos_start
+            RTresult.error.pos_end = self.pos_end
+            return RTresult
+        
+        return RTresult.success(Number.null)
+    execute_move_forward.arg_names = []
+
     def execute_run(self, exec_context): 
         fn = exec_context.symbol_table.get('fn')
 
@@ -298,6 +312,7 @@ BuiltInFunction.insert      = BuiltInFunction("insert")
 BuiltInFunction.remove      = BuiltInFunction("remove")
 BuiltInFunction.length      = BuiltInFunction("length")
 BuiltInFunction.create_grid = BuiltInFunction("create_grid")
+BuiltInFunction.move_forward = BuiltInFunction("move_forward")
 BuiltInFunction.run         = BuiltInFunction("run")
 
 # Interpreter
@@ -609,6 +624,7 @@ global_symbol_table.set("INSERT", BuiltInFunction.insert)
 global_symbol_table.set("REMOVE", BuiltInFunction.remove)
 global_symbol_table.set("LENGTH", BuiltInFunction.length)
 global_symbol_table.set("CREATE_GRID", BuiltInFunction.create_grid)
+global_symbol_table.set("MOVE_FORWARD", BuiltInFunction.move_forward)
 global_symbol_table.set("RUN", BuiltInFunction.run)
 
 def run(fn, text):

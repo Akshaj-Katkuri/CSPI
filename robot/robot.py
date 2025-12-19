@@ -8,10 +8,13 @@ from robot.grid.grid_maker import GridMaker
 from robot.robot_commands import RobotCommands
 
 from utils.results import RunTimeResult
+from utils.errors import GridError
+from values import Number
 
 class Robot: 
     def __init__(self):
         self.making = False
+        self.grid_created = False
         self.running = False
         self.grid_runner = None
         self.thread = None
@@ -39,7 +42,10 @@ class Robot:
         except Exception as e:
             print(f"Warning: failed to copy initial grid to current_grid.json: {e}")
 
+        self.grid_created = True
         self.start_grid()
+
+        return RTresult.success(Number.null)
     
     def start_grid(self): 
         if not self.running and not self.making:
@@ -82,7 +88,13 @@ class Robot:
             self.running = False
 
     def move_forward(self): 
-        self.commands.move_forward()
+        if self.running: 
+            self.commands.move_forward()
+            return RunTimeResult().success(Number.null)
+        elif not self.grid_created:
+            return RunTimeResult().failure(GridError(details="Grid has not yet been created. To create the grid, try calling the function 'CREATE_GRID()' at beginning of the file. "))
+        else: 
+            return RunTimeResult().failure(GridError(details='User closed grid runner'))
 
     def turn_left(self): 
         self.commands.turn_left()
