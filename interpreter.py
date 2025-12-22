@@ -11,7 +11,7 @@ from parser.nodes import *
 from lexer.lexer import Lexer
 from parser.parser import Parser
 
-from robot import robot
+from robot.robot import Robot
 
 class BaseFunction(Value): 
     def __init__(self, name):
@@ -246,8 +246,9 @@ class BuiltInFunction(BaseFunction):
 
     def execute_create_grid(self, exec_context: Context): #TODO: This sucks make it better
         RTresult = RunTimeResult()
+        robot: Robot = global_symbol_table.get(100)
 
-        RTresult.register(exec_context.robot.create_grid())
+        RTresult.register(robot.create_grid())
         if RTresult.error: 
             RTresult.error.pos_start = self.pos_start
             RTresult.error.pos_end = self.pos_end
@@ -258,9 +259,10 @@ class BuiltInFunction(BaseFunction):
 
     def execute_move_forward(self, exec_context: Context): 
         RTresult = RunTimeResult()
+        robot: Robot = global_symbol_table.get(100)
 
         time.sleep(2)
-        RTresult.register(exec_context.robot.move_forward())
+        RTresult.register(robot.move_forward())
         if RTresult.error: 
             RTresult.error.pos_start = self.pos_start
             RTresult.error.pos_end = self.pos_end
@@ -626,6 +628,7 @@ global_symbol_table.set("LENGTH", BuiltInFunction.length)
 global_symbol_table.set("CREATE_GRID", BuiltInFunction.create_grid)
 global_symbol_table.set("MOVE_FORWARD", BuiltInFunction.move_forward)
 global_symbol_table.set("RUN", BuiltInFunction.run)
+global_symbol_table.set(100, Robot()) # 100 is just arbitrary. Not using a string so that way this isn't accessible to the user. 
 
 def run(fn, text):
     lexer = Lexer(fn, text)
