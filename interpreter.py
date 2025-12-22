@@ -271,6 +271,36 @@ class BuiltInFunction(BaseFunction):
         return RTresult.success(Number.null)
     execute_move_forward.arg_names = []
 
+    def execute_turn_left(self, exec_context: Context): 
+        RTresult = RunTimeResult()
+        robot: Robot = global_symbol_table.get(100)
+
+        time.sleep(2)
+        RTresult.register(robot.turn_left())
+        
+        if RTresult.error: 
+            RTresult.error.pos_start = self.pos_start
+            RTresult.error.pos_end = self.pos_end
+            return RTresult
+        
+        return RTresult.success(Number.null)
+    execute_turn_left.arg_names = []
+    
+    def execute_turn_right(self, exec_context: Context): 
+        RTresult = RunTimeResult()
+        robot: Robot = global_symbol_table.get(100)
+
+        time.sleep(2)
+        RTresult.register(robot.turn_right())
+        
+        if RTresult.error: 
+            RTresult.error.pos_start = self.pos_start
+            RTresult.error.pos_end = self.pos_end
+            return RTresult
+        
+        return RTresult.success(Number.null)
+    execute_turn_right.arg_names = []
+
     def execute_run(self, exec_context): 
         fn = exec_context.symbol_table.get('fn')
 
@@ -315,7 +345,10 @@ BuiltInFunction.remove      = BuiltInFunction("remove")
 BuiltInFunction.length      = BuiltInFunction("length")
 BuiltInFunction.create_grid = BuiltInFunction("create_grid")
 BuiltInFunction.move_forward = BuiltInFunction("move_forward")
+BuiltInFunction.turn_left   = BuiltInFunction("turn_left")
+BuiltInFunction.turn_right   = BuiltInFunction("turn_right")
 BuiltInFunction.run         = BuiltInFunction("run")
+
 
 # Interpreter
 #TODO: Make static class, hard challenge
@@ -617,6 +650,7 @@ global_symbol_table = SymbolTable()
 global_symbol_table.set("NULL", Number.null)
 global_symbol_table.set("TRUE", Number.true)
 global_symbol_table.set("FALSE", Number.false) #TODO: Maybe add pi
+global_symbol_table.set(100, Robot()) # 100 is just arbitrary. Not using a string so that way this isn't accessible to the user. 
 global_symbol_table.set("DISPLAY", BuiltInFunction.display)
 global_symbol_table.set("INPUT", BuiltInFunction.input)
 global_symbol_table.set("RANDOM", BuiltInFunction.random)
@@ -627,8 +661,9 @@ global_symbol_table.set("REMOVE", BuiltInFunction.remove)
 global_symbol_table.set("LENGTH", BuiltInFunction.length)
 global_symbol_table.set("CREATE_GRID", BuiltInFunction.create_grid)
 global_symbol_table.set("MOVE_FORWARD", BuiltInFunction.move_forward)
+global_symbol_table.set("TURN_LEFT", BuiltInFunction.turn_left)
+global_symbol_table.set("TURN_RIGHT", BuiltInFunction.turn_right)
 global_symbol_table.set("RUN", BuiltInFunction.run)
-global_symbol_table.set(100, Robot()) # 100 is just arbitrary. Not using a string so that way this isn't accessible to the user. 
 
 def run(fn, text):
     lexer = Lexer(fn, text)

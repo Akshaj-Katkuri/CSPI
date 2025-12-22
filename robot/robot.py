@@ -97,10 +97,22 @@ class Robot:
             return RunTimeResult().failure(GridError(details='User closed grid runner'))
 
     def turn_left(self): 
-        self.commands.turn_left()
+        if self.running: 
+            self.commands.turn_left()
+            return RunTimeResult().success(Number.null)
+        elif not self.grid_created:
+            return RunTimeResult().failure(GridError(details="Grid has not yet been created. To create the grid, try calling the function 'CREATE_GRID()' at beginning of the file. "))
+        else: 
+            return RunTimeResult().failure(GridError(details='User closed grid runner'))
 
     def turn_right(self): 
-        self.commands.turn_right()
+        if self.running: 
+            self.commands.turn_right()
+            return RunTimeResult().success(Number.null)
+        elif not self.grid_created:
+            return RunTimeResult().failure(GridError(details="Grid has not yet been created. To create the grid, try calling the function 'CREATE_GRID()' at beginning of the file. "))
+        else: 
+            return RunTimeResult().failure(GridError(details='User closed grid runner'))
 
     def can_move(self, direction) -> bool: 
         return self.commands.can_move(direction)
