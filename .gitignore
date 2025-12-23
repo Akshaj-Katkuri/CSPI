@@ -1,0 +1,11 @@
+code.txt
+__pycache__/interpreter.cpython-312.pyc
+__pycache__/main.cpython-312.pyc
+__pycache__/pseudo.cpython-312.pyc
+__pycache__/utilities.cpython-312.pyc
+__pycache__/values.cpython-312.pyc
+lexer/__pycache__/lexer.cpython-312.pyc
+lexer/__pycache__/lexer.cpython-313.pyc
+lexer/__pycache__/tokens.cpython-312.pyc
+parser/__pycache__/nodes.cpython-312.pyc
+parser/__pycache__/parser.cpython-312.pyc

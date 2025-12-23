@@ -1,13 +1,12 @@
 # 📦 My Package
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/Akshaj-Katkuri/CSPPI)
-![GitHub all releases](https://img.shields.io/github/downloads/Akshaj-Katkuri/CSPPI/total)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 
 
 ## ℹ️ Overview
-Computer Science Principles Pseudocode Interpreter (CSPPI) is an interpreter for the pseudocode used in AP Computer Science classes. This tool can help both teachers and students practice with the pseudocode in a more interactive way, making exam preparation easier and more engaging. There may be some bugs in the program, so if you do find any, please feel free to create an issue to report them. This README will guide you through setup, usage, and some additional info about the syntax, so I would highly recommend you read through this thoroughly. 
+Computer Science Pseudocode Interpreter (CSPI) is an interpreter for the pseudocode used in AP Computer Science classes. This tool can help both teachers and students practice with the pseudocode in a more interactive way, making exam preparation easier and more engaging. There may be some bugs in the program, so if you do find any, please feel free to create an issue to report them. This README will guide you through setup, usage, and some additional info about the syntax, so I would highly recommend you read through this thoroughly. 
 
 
 ## 🌟 Highlights

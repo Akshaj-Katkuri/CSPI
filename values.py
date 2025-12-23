@@ -125,54 +125,108 @@ class Number(Value):
 
     def get_comparison_eq(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value == other.value)).set_context(self.context), None
+            return Boolean(self.value == other.value).set_context(self.context), None
         else: 
             return None, Value.illegal_operation(self, other)
         
     def get_comparison_ne(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value != other.value)).set_context(self.context), None
+            return Boolean(self.value != other.value).set_context(self.context), None
         else: 
             return None, Value.illegal_operation(self, other)
         
     def get_comparison_lt(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value < other.value)).set_context(self.context), None
+            return Boolean(self.value < other.value).set_context(self.context), None
         else: 
             return None, Value.illegal_operation(self, other)
         
     def get_comparison_gt(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value > other.value)).set_context(self.context), None
+            return Boolean(self.value > other.value).set_context(self.context), None
         else: 
             return None, Value.illegal_operation(self, other)
         
     def get_comparison_lte(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value <= other.value)).set_context(self.context), None
+            return Boolean(self.value <= other.value).set_context(self.context), None
         else: 
             return None, Value.illegal_operation(self, other)
         
     def get_comparison_gte(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value >= other.value)).set_context(self.context), None
+            return Boolean(self.value >= other.value).set_context(self.context), None
+        else: 
+            return None, Value.illegal_operation(self, other)
+        
+    def copy(self): 
+        copy = Number(self.value)
+        copy.set_pos(self.pos_start, self.pos_end)
+        copy.set_context(self.context)
+        return copy
+        
+    def __repr__(self):
+        return str(self.value)
+
+Number.null = Number(0)
+
+class Boolean(Value): 
+    def __init__(self, value):
+        super().__init__()
+        self.value: bool = value
+    
+    def added_to(self, other): 
+        if isinstance(other, Boolean):
+            return Number(int(self.value) + int(other.value)).set_context(self.context), None
+        else: 
+            return None, Value.illegal_operation(self, other)
+        
+    def subract_by(self, other): 
+        if isinstance(other, Boolean):
+            return Number(int(self.value) - int(other.value)).set_context(self.context), None
+        else: 
+            return None, Value.illegal_operation(self, other)
+        
+    def multiply_by(self, other):
+        if isinstance(other, Boolean):
+            return Number(int(self.value) * int(other.value)).set_context(self.context), None
+        else: 
+            return None, Value.illegal_operation(self, other)
+        
+    def divide_by(self, other):
+        if isinstance(other, Boolean):
+            if not other.value:
+                return None, RunTimeError(other.pos_start, other.pos_end, "Division by zero", self.context)
+            return Number(int(self.value) / int(other.value)).set_context(self.context), None
+        else: 
+            return None, Value.illegal_operation(self, other)
+
+    def get_comparison_eq(self, other):
+        if isinstance(other, Boolean):
+            return Boolean(self.value == other.value).set_context(self.context), None
+        else: 
+            return None, Value.illegal_operation(self, other)
+        
+    def get_comparison_ne(self, other):
+        if isinstance(other, Boolean):
+            return Boolean(self.value != other.value).set_context(self.context), None
         else: 
             return None, Value.illegal_operation(self, other)
         
     def and_by(self, other):
-        if isinstance(other, Number):
-            return Number(int(self.value and other.value)).set_context(self.context), None
+        if isinstance(other, Boolean):
+            return Boolean(self.value and other.value).set_context(self.context), None
         else: 
             return None, Value.illegal_operation(self, other)
         
     def or_by(self, other): 
-        if isinstance(other, Number): 
-            return Number(int(self.value or other.value)).set_context(self.context), None
+        if isinstance(other, Boolean): 
+            return Boolean(self.value or other.value).set_context(self.context), None
         else: 
             return None, Value.illegal_operation(self, other)
         
     def notted(self): 
-        return Number(1 if self.value == 0 else 0).set_context(self.context), None
+        return Boolean(not self.value).set_context(self.context), None
         
     def copy(self): 
         copy = Number(self.value)
@@ -181,14 +235,10 @@ class Number(Value):
         return copy
     
     def is_true(self): 
-        return self.value != 0
+        return self.value
         
     def __repr__(self):
         return str(self.value)
-
-Number.null = Number(0)
-Number.false = Number(0)
-Number.true = Number(1)
 
 class String(Value):
     def __init__(self, value): 
