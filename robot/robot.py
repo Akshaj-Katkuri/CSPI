@@ -9,7 +9,7 @@ from robot.robot_commands import RobotCommands
 
 from utils.results import RunTimeResult
 from utils.errors import GridError
-from values import Number
+from values import Number, Boolean
 
 class Robot: 
     def __init__(self):
@@ -115,7 +115,13 @@ class Robot:
             return RunTimeResult().failure(GridError(details='User closed grid runner'))
 
     def can_move(self, direction) -> bool: 
-        return self.commands.can_move(direction)
+        if self.running: 
+            return RunTimeResult().success(Boolean(self.commands.can_move(direction)))
+        elif not self.grid_created:
+            return RunTimeResult().failure(GridError(details="Grid has not yet been created. To create the grid, try calling the function 'CREATE_GRID()' at beginning of the file. "))
+        else: 
+            return RunTimeResult().failure(GridError(details='User closed grid runner'))
+        
 
 
 if __name__ == '__main__': 
