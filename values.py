@@ -159,6 +159,9 @@ class Number(Value):
         else: 
             return None, Value.illegal_operation(self, other)
         
+    def is_true(self): 
+        return bool(self.value)
+        
     def copy(self): 
         copy = Number(self.value)
         copy.set_pos(self.pos_start, self.pos_end)

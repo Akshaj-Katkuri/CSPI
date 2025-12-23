@@ -480,7 +480,7 @@ class Interpreter:
 
     def visit_UnaryOperatorNode(self, node: UnaryOperatorNode, context: Context):
         RTresult = RunTimeResult()
-        number: Number = RTresult.register(self.visit(node.node, context))
+        number = RTresult.register(self.visit(node.node, context))
         if RTresult.should_return(): return RTresult
 
         error = None
@@ -499,8 +499,17 @@ class Interpreter:
         RTresult = RunTimeResult()
 
         for condition, expr, should_return_null in node.cases: 
-            condition_value: Number = RTresult.register(self.visit(condition, context))
+            condition_value = RTresult.register(self.visit(condition, context))
             if RTresult.should_return(): return RTresult
+
+            if isinstance(condition_value, Boolean): 
+                print("boolean")
+            elif isinstance(condition_value, bool): 
+                print("pythonic bool")
+            elif isinstance(condition_value, Number):
+                print("CSPI number", condition_value.value)
+            else: 
+                print("no clue what type this is")
 
             if condition_value.is_true(): 
                 expr_value = RTresult.register(self.visit(expr, context))
