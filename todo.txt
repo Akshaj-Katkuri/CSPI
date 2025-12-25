@@ -42,3 +42,8 @@ Robot:
 Comments: 
  - in skip_comment(), if a comment is on a single line with no new line, then while loop will keep calling advance() indefinitely since no new line found
  - in the event that there is a comment that is the only comment in the file with no code following after it, the program detects an empty line as an invalid syntax which throws a confusing error. This error has less to do with the comment function and more to do with the program not ignoring an empty line
+
+Grid: 
+ - Make error if robot ran into wall
+ - Celebratory message if robot reached goal
+ - It should be allowed to overlap wall and goal on the robot. Encode this in .json file with "ROBOT_WALL" or "ROBOT_GOAL"
