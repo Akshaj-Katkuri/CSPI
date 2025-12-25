@@ -2,21 +2,21 @@
   [
     null,
     null,
-    null,
+    "WALL",
     null,
     null
   ],
   [
-    null,
-    null,
     null,
     0,
+    "WALL",
+    "GOAL",
     null
   ],
   [
     null,
     null,
-    null,
+    "WALL",
     null,
     null
   ],

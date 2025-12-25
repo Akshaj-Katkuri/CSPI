@@ -36,6 +36,9 @@ class GridRunner:
 		self.screen = None
 		self.window_open = False
 
+		# map of (r,c) -> underlying cell type (WALL or GOAL) when turtle overlaps
+		self.under_map = {}
+
 		self.invalid_json_error_count = 0
 
 		self._init_pygame()
@@ -66,18 +69,39 @@ class GridRunner:
 			self.grid = [[EMPTY for _ in range(self.GRID_COLS)] for _ in range(self.GRID_ROWS)]
 			self.turtle_pos = None
 			self.goal_pos = None
+			# reset under_map when loading
+			self.under_map = {}
 			for r in range(min(len(data), self.GRID_ROWS)):
 				row = data[r]
 				for c in range(min(len(row), self.GRID_COLS)):
 					val = row[c]
 					if val is None:
 						self.grid[r][c] = EMPTY
-					elif val == "WALL":
+					# handle strings for wall/goal (both capitalizations)
+					elif val == "WALL" or val == "Wall":
 						self.grid[r][c] = WALL
-					elif val == "GOAL":
+					elif val == "GOAL" or val == "Goal":
 						self.grid[r][c] = GOAL
 						self.goal_pos = (r, c)
+					# overlapping entry: ["Wall"/"Goal", deg]
+					elif isinstance(val, list) and len(val) >= 2 and isinstance(val[1], (int, float)):
+						under = val[0]
+						deg = int(val[1]) % 360
+						# treat underlying as wall or goal (case-insensitive)
+						if under == "WALL" or under == "Wall":
+							self.grid[r][c] = TURTLE
+							self.under_map[(r, c)] = WALL
+						elif under == "GOAL" or under == "Goal":
+							self.grid[r][c] = TURTLE
+							self.under_map[(r, c)] = GOAL
+							self.goal_pos = (r, c)
+						else:
+							# unknown underlying, treat as turtle on empty
+							self.grid[r][c] = TURTLE
+						self.turtle_pos = (r, c)
+						self.turtle_dir = ((360 - deg) % 360) // 90
 					elif isinstance(val, (int, float)):
+						# plain turtle
 						self.grid[r][c] = TURTLE
 						self.turtle_pos = (r, c)
 						deg = int(val) % 360
@@ -136,14 +160,22 @@ class GridRunner:
 		for r in range(self.GRID_ROWS):
 			for c in range(self.GRID_COLS):
 				rect = pygame.Rect(offset_x + c * CELL_SIZE,
-								   offset_y + r * CELL_SIZE,
-								   CELL_SIZE, CELL_SIZE)
+							   offset_y + r * CELL_SIZE,
+							   CELL_SIZE, CELL_SIZE)
 				if self.grid[r][c] == EMPTY:
 					pygame.draw.rect(self.screen, WHITE, rect)
 				elif self.grid[r][c] == WALL:
 					pygame.draw.rect(self.screen, BLACK, rect)
 				elif self.grid[r][c] == TURTLE:
-					pygame.draw.rect(self.screen, WHITE, rect)
+					# if there's an underlying element, draw it first so turtle appears on top
+					if (r, c) in self.under_map:
+						under = self.under_map[(r, c)]
+						if under == WALL:
+							pygame.draw.rect(self.screen, BLACK, rect)
+						elif under == GOAL:
+							pygame.draw.rect(self.screen, GRAY, rect)
+					else:
+						pygame.draw.rect(self.screen, WHITE, rect)
 					self.draw_turtle_icon(self.screen, rect, BLUE, self.turtle_dir)
 				elif self.grid[r][c] == GOAL:
 					pygame.draw.rect(self.screen, GRAY, rect)

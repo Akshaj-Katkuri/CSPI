@@ -19,16 +19,21 @@ class RobotCommands:
             with open(self.path, "r") as f:
                 data = json.load(f)
             
-            # Find turtle position and direction
+            # Find turtle position and direction. Turtle may be stored as a number
+            # (deg) or as an overlapping list [under, deg].
             turtle_pos = None
             turtle_dir_deg = 0
-            
+
             for r in range(len(data)):
                 for c in range(len(data[r])):
                     val = data[r][c]
                     if isinstance(val, (int, float)):
                         turtle_pos = (r, c)
                         turtle_dir_deg = int(val) % 360
+                        break
+                    if isinstance(val, list) and len(val) >= 2 and isinstance(val[1], (int, float)):
+                        turtle_pos = (r, c)
+                        turtle_dir_deg = int(val[1]) % 360
                         break
                 if turtle_pos:
                     break
@@ -58,14 +63,34 @@ class RobotCommands:
             if row < 0 or row >= max_rows or col < 0 or col >= max_cols:
                 raise RuntimeError(f"Turtle would move out of bounds to ({row}, {col}). Grid bounds: rows [0, {max_rows-1}], cols [0, {max_cols-1}]")
             
-            # Update grid: remove turtle from old position, add to new position
+            # Update grid: remove turtle from old position, but preserve underlying
+            # wall/goal if present. Also check target cell for overlapping.
+            old_pos = None
             for r in range(len(data)):
                 for c in range(len(data[r])):
-                    if isinstance(data[r][c], (int, float)):
-                        data[r][c] = None  # Clear old turtle position
-            
-            # Place turtle at new position with same direction
-            data[row][col] = turtle_dir_deg
+                    val = data[r][c]
+                    if isinstance(val, (int, float)):
+                        old_pos = (r, c)
+                        data[r][c] = None
+                    elif isinstance(val, list) and len(val) >= 2 and isinstance(val[1], (int, float)):
+                        old_pos = (r, c)
+                        # restore underlying value
+                        data[r][c] = val[0] if val[0] is not None else None
+
+            # Place turtle at new position with same direction. If there is an
+            # underlying wall/goal, store as [under, deg] so the UI can render
+            # the turtle overlapping the element.
+            target_val = data[row][col]
+            if isinstance(target_val, (int, float)) or (isinstance(target_val, list) and len(target_val) >= 2 and isinstance(target_val[1], (int, float))):
+                # occupied by another turtle -> block
+                raise RuntimeError("Target occupied by another turtle")
+
+            if target_val == "Wall" or target_val == "WALL" or target_val == 1:
+                data[row][col] = ["Wall", turtle_dir_deg]
+            elif target_val == "Goal" or target_val == "GOAL":
+                data[row][col] = ["Goal", turtle_dir_deg]
+            else:
+                data[row][col] = turtle_dir_deg
             
             # Write back to JSON
             with open(self.path, "w") as f:
@@ -98,6 +123,10 @@ class RobotCommands:
                         turtle_pos = (r, c)
                         turtle_dir_deg = int(val) % 360
                         break
+                    if isinstance(val, list) and len(val) >= 2 and isinstance(val[1], (int, float)):
+                        turtle_pos = (r, c)
+                        turtle_dir_deg = int(val[1]) % 360
+                        break
                 if turtle_pos:
                     break
 
@@ -110,8 +139,12 @@ class RobotCommands:
             times = int(times) if times and times > 0 else 1
             new_deg = (turtle_dir_deg + 90 * times) % 360
 
-            # write back
-            data[row][col] = new_deg
+            # write back, preserving underlying if present
+            cur = data[row][col]
+            if isinstance(cur, list) and len(cur) >= 2:
+                data[row][col] = [cur[0], new_deg]
+            else:
+                data[row][col] = new_deg
             with open(self.path, "w") as f:
                 json.dump(data, f, indent=2)
 
@@ -138,6 +171,10 @@ class RobotCommands:
                         turtle_pos = (r, c)
                         turtle_dir_deg = int(val) % 360
                         break
+                    if isinstance(val, list) and len(val) >= 2 and isinstance(val[1], (int, float)):
+                        turtle_pos = (r, c)
+                        turtle_dir_deg = int(val[1]) % 360
+                        break
                 if turtle_pos:
                     break
 
@@ -149,8 +186,12 @@ class RobotCommands:
             times = int(times) if times and times > 0 else 1
             new_deg = (turtle_dir_deg - 90 * times) % 360
 
-            # write back
-            data[row][col] = new_deg
+            # write back, preserving underlying if present
+            cur = data[row][col]
+            if isinstance(cur, list) and len(cur) >= 2:
+                data[row][col] = [cur[0], new_deg]
+            else:
+                data[row][col] = new_deg
             with open(self.path, "w") as f:
                 json.dump(data, f, indent=2)
 
@@ -178,6 +219,10 @@ class RobotCommands:
                     if isinstance(val, (int, float)):
                         turtle_pos = (r, c)
                         turtle_dir_deg = int(val) % 360
+                        break
+                    if isinstance(val, list) and len(val) >= 2 and isinstance(val[1], (int, float)):
+                        turtle_pos = (r, c)
+                        turtle_dir_deg = int(val[1]) % 360
                         break
                 if turtle_pos:
                     break
@@ -232,15 +277,14 @@ class RobotCommands:
 
             target_val = data[target_r][target_c]
 
-            # treat walls as blocked. Maker/Runner use "Wall"/"WALL" strings or internal 1 value.
-            if target_val == "WALL" or target_val == 1:
-                return False
-
-            # numeric means occupied by turtle (or other numeric) -> blocked
+            # numeric means occupied by another turtle -> blocked
             if isinstance(target_val, (int, float)):
                 return False
+            if isinstance(target_val, list) and len(target_val) >= 2 and isinstance(target_val[1], (int, float)):
+                # occupied by a turtle overlay -> blocked
+                return False
 
-            # "Goal"/"GOAL" or None are considered passable
+            # Wall/Goal (string or numeric 1) are passable — movement will create an overlap
             return True
 
         except Exception:
