@@ -1,16 +1,16 @@
 [
   [
     null,
-    null,
     "WALL",
-    null,
-    null
+    "WALL",
+    "WALL",
+    0
   ],
   [
     null,
-    0,
-    "WALL",
     "GOAL",
+    "WALL",
+    null,
     null
   ],
   [

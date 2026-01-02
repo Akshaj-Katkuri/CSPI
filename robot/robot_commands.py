@@ -61,7 +61,8 @@ class RobotCommands:
             
             # Check if out of bounds
             if row < 0 or row >= max_rows or col < 0 or col >= max_cols:
-                raise RuntimeError(f"Turtle would move out of bounds to ({row}, {col}). Grid bounds: rows [0, {max_rows-1}], cols [0, {max_cols-1}]")
+                return "OUT OF BOUNDS"
+                # raise RuntimeError(f"Turtle would move out of bounds to ({row}, {col}). Grid bounds: rows [0, {max_rows-1}], cols [0, {max_cols-1}]")
             
             # Update grid: remove turtle from old position, but preserve underlying
             # wall/goal if present. Also check target cell for overlapping.
@@ -82,8 +83,9 @@ class RobotCommands:
             # the turtle overlapping the element.
             target_val = data[row][col]
             if isinstance(target_val, (int, float)) or (isinstance(target_val, list) and len(target_val) >= 2 and isinstance(target_val[1], (int, float))):
-                # occupied by another turtle -> block
-                raise RuntimeError("Target occupied by another turtle")
+                # occupied by another turtle
+                print('Target occupied by another turtle.')
+                return None
 
             if target_val == "Wall" or target_val == "WALL" or target_val == 1:
                 data[row][col] = ["Wall", turtle_dir_deg]
@@ -95,14 +97,23 @@ class RobotCommands:
             # Write back to JSON
             with open(self.path, "w") as f:
                 json.dump(data, f, indent=2)
-            
+
+            # If we wrote an overlapping representation, return which underlying
+            # element the turtle is on. Otherwise return None.
+            cur = data[row][col]
+            if isinstance(cur, list) and len(cur) >= 1:
+                under = cur[0]
+                if isinstance(under, str) and under.lower().startswith("wall"):
+                    return "WALL"
+                if isinstance(under, str) and under.lower().startswith("goal"):
+                    return "GOAL"
+
             print(f"Turtle moved to ({row}, {col})")
-        
-        except RuntimeError: 
-            print("Robot reached the boundary, so it cannot move forward. ")
-        
+            return None
+
         except Exception as e:
             print(f"Error moving forward: {e}")
+            return None
 
     def turn_left(self, times=1):
         """Rotate the turtle left (counterclockwise) by 90 degrees per time.

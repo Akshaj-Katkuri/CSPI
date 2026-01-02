@@ -89,8 +89,18 @@ class Robot:
 
     def move_forward(self): 
         if self.running: 
-            self.commands.move_forward()
-            return RunTimeResult().success(Number.null)
+            result: str = self.commands.move_forward()
+            if result is None: 
+                return RunTimeResult().success(Number.null)
+            elif result.upper() == "OUT OF BOUNDS": 
+                return RunTimeResult().failure(GridError(details="Robot is trying to move out of bounds."))
+            elif result.upper() == "WALL":
+                return RunTimeResult().failure(GridError(details="Robot ran into a wall."))
+            elif result.upper() == "GOAL": 
+                print("Robot has reached the goal!")
+                return RunTimeResult().success(Number.null)
+            else:
+                return RunTimeResult().success(Number.null)
         elif not self.grid_created:
             return RunTimeResult().failure(GridError(details="Grid has not yet been created. To create the grid, try calling the function 'CREATE_GRID()' at beginning of the file. "))
         else: 

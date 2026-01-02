@@ -502,15 +502,6 @@ class Interpreter:
             condition_value = RTresult.register(self.visit(condition, context))
             if RTresult.should_return(): return RTresult
 
-            if isinstance(condition_value, Boolean): 
-                print("boolean")
-            elif isinstance(condition_value, bool): 
-                print("pythonic bool")
-            elif isinstance(condition_value, Number):
-                print("CSPI number", condition_value.value)
-            else: 
-                print("no clue what type this is")
-
             if condition_value.is_true(): 
                 expr_value = RTresult.register(self.visit(expr, context))
                 if RTresult.should_return(): return RTresult
