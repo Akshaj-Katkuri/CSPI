@@ -4,10 +4,10 @@
     "WALL",
     "WALL",
     "WALL",
-    90
+    null
   ],
   [
-    null,
+    0,
     "GOAL",
     "WALL",
     null,

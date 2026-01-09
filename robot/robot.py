@@ -25,6 +25,9 @@ class Robot:
     
     def create_grid(self): 
         RTresult = RunTimeResult()
+
+        self.halt()
+        self.grid_runner = None
         
         self.making = True
 
@@ -88,23 +91,23 @@ class Robot:
             self.running = False
 
     def move_forward(self): 
+        RTresult = RunTimeResult()
+
         if self.running: 
-            result: str = self.commands.move_forward()
+            result = RTresult.register(self.commands.move_forward())
+            if RTresult.error: return RTresult
+
             if result is None: 
-                return RunTimeResult().success(Number.null)
-            elif result.upper() == "OUT OF BOUNDS": 
-                return RunTimeResult().failure(GridError(details="Robot is trying to move out of bounds."))
-            elif result.upper() == "WALL":
-                return RunTimeResult().failure(GridError(details="Robot ran into a wall."))
-            elif result.upper() == "GOAL": 
+                return RTresult.success(Number.null)
+            elif result == "GOAL": 
                 print("Robot has reached the goal!")
-                return RunTimeResult().success(Number.null)
-            else:
-                return RunTimeResult().success(Number.null)
+            
+            return RTresult.success(Number.null)
+        
         elif not self.grid_created:
-            return RunTimeResult().failure(GridError(details="Grid has not yet been created. To create the grid, try calling the function 'CREATE_GRID()' at beginning of the file. "))
+            return RTresult.failure(GridError(details="Grid has not yet been created. To create the grid, try calling the function 'CREATE_GRID()' at beginning of the file. "))
         else: 
-            return RunTimeResult().failure(GridError(details='User closed grid runner'))
+            return RTresult.failure(GridError(details='User closed grid runner'))
 
     def turn_left(self): 
         if self.running: 

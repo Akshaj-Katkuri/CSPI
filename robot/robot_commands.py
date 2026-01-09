@@ -1,6 +1,9 @@
 import json
 import os
 
+from utils.errors import GridError
+from utils.results import RunTimeResult
+
 
 class RobotCommands: 
     def __init__(self, current_grid_path):
@@ -14,6 +17,8 @@ class RobotCommands:
         
         Direction encoding in JSON: 0=right, 90=up, 180=left, 270=down (counterclockwise positive)
         """
+        RTresult = RunTimeResult()
+
         try:
             # Load current grid state
             with open(self.path, "r") as f:
@@ -39,8 +44,7 @@ class RobotCommands:
                     break
             
             if turtle_pos is None:
-                print("Error: Turtle not found in grid")
-                return
+                return GridError(details="No turtle found on grid.")
             
             # Calculate new position based on direction and steps
             row, col = turtle_pos
@@ -61,7 +65,7 @@ class RobotCommands:
             
             # Check if out of bounds
             if row < 0 or row >= max_rows or col < 0 or col >= max_cols:
-                return "OUT OF BOUNDS"
+                return RTresult.failure(GridError(details="Robot is trying to move out of bounds."))
                 # raise RuntimeError(f"Turtle would move out of bounds to ({row}, {col}). Grid bounds: rows [0, {max_rows-1}], cols [0, {max_cols-1}]")
             
             # Update grid: remove turtle from old position, but preserve underlying
@@ -83,9 +87,7 @@ class RobotCommands:
             # the turtle overlapping the element.
             target_val = data[row][col]
             if isinstance(target_val, (int, float)) or (isinstance(target_val, list) and len(target_val) >= 2 and isinstance(target_val[1], (int, float))):
-                # occupied by another turtle
-                print('Target occupied by another turtle.')
-                return None
+                return RTresult.failure(GridError(details="Target occupied by another turtle."))
 
             if target_val == "Wall" or target_val == "WALL" or target_val == 1:
                 data[row][col] = ["Wall", turtle_dir_deg]
@@ -104,7 +106,7 @@ class RobotCommands:
             if isinstance(cur, list) and len(cur) >= 1:
                 under = cur[0]
                 if isinstance(under, str) and under.lower().startswith("wall"):
-                    return "WALL"
+                    return RTresult.failure(GridError(details="Robot ran into a wall."))
                 if isinstance(under, str) and under.lower().startswith("goal"):
                     return "GOAL"
 
