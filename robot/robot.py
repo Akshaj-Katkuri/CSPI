@@ -2,9 +2,10 @@ import threading
 import time
 import os
 import shutil
+import subprocess, pickle
+from pathlib import Path
 
 from robot.grid.grid_runner import GridRunner
-from robot.grid.grid_maker import GridMaker
 from robot.robot_commands import RobotCommands
 
 from utils.results import RunTimeResult
@@ -31,7 +32,12 @@ class Robot:
         
         self.making = True
 
-        RTresult.register(GridMaker().run())
+        subprocess.run(["python", "grid_maker.py"])
+        
+        path = Path("grid_output.pkl")
+        with path.open("rb") as f:
+            output = pickle.load(f)
+        RTresult.register(output)
         if RTresult.error: return RTresult
         
         self.making = False

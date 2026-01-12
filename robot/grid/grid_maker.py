@@ -1,5 +1,6 @@
 import pygame
-import sys
+import pickle
+from pathlib import Path
 import json
 import os
 
@@ -336,6 +337,7 @@ class GridMaker:
                 if event.type == pygame.QUIT:
                     running = False
                     pygame.quit()
+
                     return RunTimeResult().failure(GridError(details='User closed grid maker'))
 
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -414,5 +416,11 @@ class GridMaker:
             pygame.display.flip()
 
         pygame.quit()
-        # do not sys.exit() so caller can continue
-        return self.path
+        return RunTimeResult().success(self.path)
+    
+if __name__ == "__main__": 
+    output = GridMaker().run()
+    
+    path = Path("grid_output.pkl")
+    with path.open("wb") as f: 
+        pickle.dump(output, f)
