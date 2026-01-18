@@ -1,14 +1,75 @@
 [
   [
-    null,
-    "WALL",
-    "WALL",
-    "WALL",
-    null
-  ],
-  [
-    0,
     "GOAL",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    null,
+    null,
+    "WALL",
+    "WALL",
+    null,
+    "WALL",
+    "WALL",
+    "WALL",
+    "WALL",
+    null
+  ],
+  [
+    null,
+    [
+      "Wall",
+      0
+    ],
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    "WALL",
+    null
+  ],
+  [
+    null,
+    "WALL",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    "WALL",
+    null
+  ],
+  [
+    null,
+    "WALL",
+    "WALL",
+    "WALL",
+    null,
+    null,
+    null,
+    "WALL",
+    null,
+    null
+  ],
+  [
+    null,
+    "WALL",
+    null,
+    null,
+    "WALL",
+    null,
+    null,
     "WALL",
     null,
     null
@@ -17,10 +78,20 @@
     null,
     null,
     "WALL",
+    "WALL",
+    null,
+    null,
+    "WALL",
+    null,
     null,
     null
   ],
   [
+    null,
+    null,
+    null,
+    null,
+    null,
     null,
     null,
     null,

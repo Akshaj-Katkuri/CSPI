@@ -1,7 +1,9 @@
 import threading
 import time
 import os
+import sys
 import shutil
+import signal
 import subprocess, pickle
 from pathlib import Path
 
@@ -32,8 +34,10 @@ class Robot:
         
         self.making = True
 
-        subprocess.run(["python", "grid_maker.py"])
-        
+        project_root = Path(__file__).parent.parent # first parent: robot, second parent: CSPI, which is where entry point is
+        module_name = "robot.grid.grid_maker"
+        subprocess.run([sys.executable, "-m", module_name], cwd=project_root)
+
         path = Path("grid_output.pkl")
         with path.open("rb") as f:
             output = pickle.load(f)
@@ -61,40 +65,35 @@ class Robot:
             self.running = True
             # Clear any previous stop request and start a background thread
             self._stop_event.clear()
-            self.thread = threading.Thread(target=self.loop)
+            self.thread = threading.Thread(target=self.start_subprocess_for_runner)
             self.thread.start()
 
-    def loop(self): 
-        if self.grid_runner is None: 
-            self.grid_runner = GridRunner()
-        try:
-            # Run until a stop is requested or GridRunner signals shutdown
-            while not self._stop_event.is_set():
-                try:
-                    self.grid_runner.update_display()
-                except RuntimeError:
-                    # Propagate to outer handler so we can clean up
-                    raise
-        except RuntimeError as e:
-            print(f"Grid Runner Error: {e}")
-            self.grid_runner.close()
-            self.running = False
-        finally:
-            # Ensure running flag is cleared when loop exits
-            self.running = False
+    def start_subprocess_for_runner(self): 
+        project_root = Path(__file__).parent.parent # first parent: robot, second parent: CSPI, which is where entry point is
+        module_name = "robot.grid.grid_runner"
+        self.grid_proc = subprocess.Popen(
+            [sys.executable, "-m", module_name],
+            cwd=project_root,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        stdout, stderr = self.grid_proc.communicate()
+        if stdout: 
+            print(stdout)
+        if stderr: 
+            print(stderr)
+        
+        self.running = True
 
     def halt(self): 
-        # Signal the loop thread to stop
-        try:
+        try: 
+            self.grid_proc.send_signal(sig=signal.SIGBREAK)
             self._stop_event.set()
-            # Close the grid runner (safe to call even if None)
-            if self.grid_runner is not None:
-                self.grid_runner.close()
-            # Join the thread to ensure it has exited
             if self.thread is not None and self.thread.is_alive():
                 self.thread.join(timeout=2)
-        finally:
             self.running = False
+        except: 
+            pass
 
     def move_forward(self): 
         RTresult = RunTimeResult()

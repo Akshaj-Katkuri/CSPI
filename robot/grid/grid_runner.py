@@ -1,8 +1,9 @@
-
 import pygame
 import sys
 import json
 import os
+
+from signal import signal, SIGINT, SIGBREAK
 
 MAX_SIZE = 10
 MIN_SIZE = 2
@@ -20,6 +21,8 @@ EMPTY = 0
 WALL = 1
 TURTLE = 2
 GOAL = 3
+
+running = True
 
 class GridRunner:
 	def __init__(self, path="current_grid.json"):
@@ -201,13 +204,22 @@ class GridRunner:
 			self.window_open = False
 			pygame.quit()
 
+def handle_exit_signal(*args): 
+	global running
+	print("Recieved exit signal, stopping loop. TODO: Remove this print statement from grid_runner.py")
+	running = False
+
+signal(SIGINT, handle_exit_signal)
+if sys.platform == "win32": 
+	signal(SIGBREAK, handle_exit_signal)
+
 if __name__ == "__main__":
 	runner = GridRunner()
 	try:
-		while True:
+		while running:
 			runner.update_display()
-			pygame.time.wait(2000)  # update every 2 seconds
 	except RuntimeError as e:
 		print(e)
+	finally: 
 		runner.close()
 		sys.exit(0)
