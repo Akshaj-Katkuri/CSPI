@@ -321,7 +321,7 @@ class BuiltInFunction(BaseFunction):
         value = RTresult.register(robot.can_move(_direction.value))
         if RTresult.error: return RTresult
         
-        return RunTimeResult().success(Boolean(value))
+        return RunTimeResult().success(value)
     execute_can_move.arg_names = ["direction"]
 
     def execute_run(self, exec_context): 
