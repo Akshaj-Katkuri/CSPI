@@ -149,7 +149,7 @@ class GridMaker:
 
         with open(path, "w") as f:
             json.dump(data, f, indent=2)
-        print("✅ Grid exported to", path)
+        # print("✅ Grid exported to", path)
 
     # --- grid manipulation ---
     def resize_grid(self, new_rows, new_cols):

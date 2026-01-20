@@ -4,7 +4,7 @@ import os
 from utils.errors import GridError
 from utils.results import RunTimeResult
 
-
+# TODO: Prob should make this a static class, passing path in as another parameter. 
 class RobotCommands: 
     def __init__(self, current_grid_path):
         # Resolve path relative to robot folder (where this file is)
@@ -218,88 +218,89 @@ class RobotCommands:
         direction is a string: "FORWARD", "BACKWARD", "LEFT" or "RIGHT" (case-insensitive).
         Movement is blocked by grid bounds or walls. "Goal"/"GOAL" cells are treated as passable.
         """
-        try:
-            # load grid
-            with open(self.path, "r") as f:
-                data = json.load(f)
+        with open(self.path, "r") as f: 
+            data = json.load(f)
 
-            # find turtle position and heading (deg)
-            turtle_pos = None
-            turtle_dir_deg = 0
-            for r in range(len(data)):
-                for c in range(len(data[r])):
-                    val = data[r][c]
-                    if isinstance(val, (int, float)):
-                        turtle_pos = (r, c)
-                        turtle_dir_deg = int(val) % 360
-                        break
-                    if isinstance(val, list) and len(val) >= 2 and isinstance(val[1], (int, float)):
-                        turtle_pos = (r, c)
-                        turtle_dir_deg = int(val[1]) % 360
-                        break
-                if turtle_pos:
+        turtle_pos = None
+        turtle_angle = 0
+
+        for r in range(len(data)): 
+            for c in range(len(data[r])): 
+                value = data[r][c]
+
+                if isinstance(value, (int)): 
+                    # This means it is a turtle
+                    turtle_pos = (r, c)
+                    turtle_angle = value
+                    break
+                if isinstance(value, list) and len(value) >= 2 and isinstance(value[1], (int, float)):
+                    # This means turtle is overlapping with a goal/wall
+                    turtle_pos = (r, c)
+                    turtle_angle = int(value[1]) % 360
                     break
 
-            if turtle_pos is None:
-                return False
+        if turtle_pos == None:
+            return False #TODO: Raise error here ex: "No turtle found on grid"
+        
+        d = (direction or "").strip().upper()
+        if d == "FORWARD":
+            offset = 0
+        elif d == "BACKWARD":
+            offset = 180
+        elif d == "LEFT":
+            offset = 90
+        elif d == "RIGHT":
+            offset = 270
+        else:
+            raise ValueError(f"Unknown direction: {direction}")
 
-            # map relative direction to absolute heading
-            d = (direction or "").strip().upper()
-            if d == "FORWARD":
-                offset = 0
-            elif d == "BACKWARD":
-                offset = 180
-            elif d == "LEFT":
-                offset = 90
-            elif d == "RIGHT":
-                offset = 270
-            else:
-                raise ValueError(f"Unknown direction: {direction}")
+        abs_angle = (turtle_angle + offset) % 360
 
-            abs_deg = (turtle_dir_deg + offset) % 360
-
-            # convert absolute heading to row/col delta
-            if abs_deg == 0:  # right
+        if abs_angle == 0:  # right
+            dr, dc = 0, 1
+        elif abs_angle == 90:  # up
+            dr, dc = -1, 0
+        elif abs_angle == 180:  # left
+            dr, dc = 0, -1
+        elif abs_angle == 270:  # down
+            dr, dc = 1, 0
+        else:
+            # Backup if angle isn't a multiple of 90 for some reason
+            normalized = (round(abs_angle / 90) * 90) % 360
+            if normalized == 0:
                 dr, dc = 0, 1
-            elif abs_deg == 90:  # up
+            elif normalized == 90:
                 dr, dc = -1, 0
-            elif abs_deg == 180:  # left
+            elif normalized == 180:
                 dr, dc = 0, -1
-            elif abs_deg == 270:  # down
-                dr, dc = 1, 0
             else:
-                # If heading is something unexpected, normalize to nearest 90
-                normalized = (round(abs_deg / 90) * 90) % 360
-                if normalized == 0:
-                    dr, dc = 0, 1
-                elif normalized == 90:
-                    dr, dc = -1, 0
-                elif normalized == 180:
-                    dr, dc = 0, -1
-                else:
-                    dr, dc = 1, 0
+                dr, dc = 1, 0
 
-            row, col = turtle_pos
-            target_r, target_c = row + dr, col + dc
+        row, col = turtle_pos
+        target_r, target_c = row + dr, col + dc
 
-            # check bounds
-            max_rows = len(data)
-            max_cols = max((len(rw) for rw in data), default=0)
-            if target_r < 0 or target_r >= max_rows or target_c < 0 or target_c >= max_cols:
-                return False
-
-            target_val = data[target_r][target_c]
-
-            # numeric means occupied by another turtle -> blocked
-            if isinstance(target_val, (int, float)):
-                return False
-            if isinstance(target_val, list) and len(target_val) >= 2 and isinstance(target_val[1], (int, float)):
-                # occupied by a turtle overlay -> blocked
-                return False
-
-            # Wall/Goal (string or numeric 1) are passable — movement will create an overlap
-            return True
-
-        except Exception:
-            # On any error, conservatively report not movable
+        # Check if out of bounds
+        max_rows = len(data)
+        max_cols = len(data[0])
+        if (target_r < 0
+            or target_r >= max_rows
+            or target_c < 0
+            or target_c >= max_cols):
             return False
+
+        target_value = data[target_r][target_c]
+
+        if isinstance(target_value, str): 
+            if target_value.upper() == "WALL": 
+                return False
+
+        if isinstance(target_value, int):
+            # occupied by another turtle
+            return False
+        
+        if isinstance(target_value, list) and len(target_value) >= 2 and isinstance(target_value[1], (int, float)):
+            # occupied by a turtle on a wall/goal, which shouldn't happen since only one turtle can exist
+            return False
+
+        # Goal is valid
+        return True

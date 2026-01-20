@@ -78,10 +78,6 @@ class Robot:
             stderr=subprocess.PIPE
         )
         stdout, stderr = self.grid_proc.communicate()
-        if stdout: 
-            print(stdout)
-        if stderr: 
-            print(stderr)
         
         self.running = True
 
@@ -161,7 +157,6 @@ if __name__ == '__main__':
             robot.turn_right()
         elif control == 4: 
             dir = input("Direction: ").upper()
-            print(robot.can_move(dir))
         elif control == 0: 
             robot.halt()
             break

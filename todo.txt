@@ -45,4 +45,5 @@ Comments:
 
 Grid: 
  - can_move() is returning true even with a wall ahead. 
+ - Remove the giant print message that comes when grid_runner is closed()
  - Move all move_forward error messages into the Robot commands to then use register() in robot.py. turn left or right has error message: robot not found in grid. This should also be a Grid Error which will be wrapped in register() method. 

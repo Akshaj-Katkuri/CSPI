@@ -206,7 +206,6 @@ class GridRunner:
 
 def handle_exit_signal(*args): 
 	global running
-	print("Recieved exit signal, stopping loop. TODO: Remove this print statement from grid_runner.py")
 	running = False
 
 signal(SIGINT, handle_exit_signal)
@@ -219,7 +218,7 @@ if __name__ == "__main__":
 		while running:
 			runner.update_display()
 	except RuntimeError as e:
-		print(e)
+		pass # print(e)
 	finally: 
 		runner.close()
 		sys.exit(0)
