@@ -365,16 +365,21 @@ class Parser:
                 condition, body, True
             ))
         else:
-            if self.current_token.type != TYPE_INT:
+            if self.current_token.type not in [TYPE_INT, TYPE_IDENTIFIER]:
                 return result.failure(InvalidSyntaxError(
                     self.current_token.pos_start, self.current_token.pos_end, 
                     "Expected 'UNTIL' or int"
                 ))
             
-            count = self.current_token
-
-            result.register_advancement()
-            self.advance()
+            count_token = None
+            count_node = None
+            if self.current_token.type == TYPE_INT: 
+                count_token = self.current_token
+                result.register_advancement()
+                self.advance()
+            else: 
+                count_node = result.register(self.atom())
+                if result.error: return result
 
             if not self.current_token.matches(TYPE_KEYWORD, 'TIMES'):
                 return result.failure(InvalidSyntaxError(
@@ -410,9 +415,14 @@ class Parser:
             result.register_advancement()
             self.advance()
 
-            return result.success(RepeatNode(
-                count_token=count, body_node=body, should_return_null=True
-            ))
+            if count_token: 
+                return result.success(RepeatNode(
+                count_token=count_token, body_node=body, should_return_null=True
+                ))
+            else: 
+                return result.success(RepeatNode(
+                body_node=body, should_return_null=True, count_node=count_node
+                ))
 
     def func_def(self): 
         result = ParseResult()

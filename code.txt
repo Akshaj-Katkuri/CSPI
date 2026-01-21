@@ -1,9 +1,11 @@
 CREATE_GRID()
 
-IF (CAN_MOVE(FORWARD)) 
-{
-    MOVE_FORWARD()
-} ELSE 
-{
-    TURN_RIGHT()
+n <- 3
+
+REPEAT 3 TIMES {
+    REPEAT n TIMES {
+        MOVE_FORWARD()
+    }
+    TURN_LEFT()
+    n <- n - 1
 }

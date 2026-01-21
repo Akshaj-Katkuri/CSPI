@@ -112,12 +112,18 @@ class RepeatUntilNode:
         self.pos_end = body_node.pos_end
 
 class RepeatNode:
-    def __init__(self, count_token, body_node, should_return_null):
+    def __init__(self, count_token=None, body_node=None, should_return_null=False, count_node=None):
         self.count_token = count_token
         self.body_node = body_node
         self.should_return_null = should_return_null
+        self.count_node = count_node
 
-        self.pos_start = count_token.pos_start
+        self.pos_start = None
+        if count_token: 
+            self.pos_start = count_token.pos_start
+        else: 
+            self.pos_start = count_node.pos_start
+        
         self.pos_end = body_node.pos_end
 
 class FunctionDefinitionNode: 

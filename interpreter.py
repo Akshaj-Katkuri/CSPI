@@ -608,8 +608,12 @@ class Interpreter:
         RTresult = RunTimeResult()
         elements = []
 
-        count: Token = node.count_token
-        if RTresult.should_return(): return RTresult
+        if node.count_token:
+            count: Token = node.count_token
+            if RTresult.should_return(): return RTresult
+        else: 
+            count = RTresult.register(self.visit(node.count_node, context))
+            if RTresult.should_return(): return RTresult
 
         for i in range(count.value): 
             value = RTresult.register(self.visit(node.body_node, context))

@@ -50,7 +50,7 @@ while-expr      : KEYWORD:WHILE LPAREN expr RPAREN
 
 repeat-expr     : KEYWORD:REPEAT
                   (KEYWORD:UNTIL LPAREN expr RPAREN) 
-                | (INT KEYWORD:TIMES)
+                | ((INT|IDENTIFIER) KEYWORD:TIMES)
                   NEWLINE* LCURL statements RCURL
 
 func-def        : KEYWORD:PROCEDURE IDENTIFIER?
