@@ -109,8 +109,6 @@ class RobotCommands:
                     return RTresult.failure(GridError(details="Robot ran into a wall."))
                 if isinstance(under, str) and under.lower().startswith("goal"):
                     return "GOAL"
-
-            print(f"Turtle moved to ({row}, {col})")
             return None
 
         except Exception as e:
@@ -207,8 +205,6 @@ class RobotCommands:
                 data[row][col] = new_deg
             with open(self.path, "w") as f:
                 json.dump(data, f, indent=2)
-
-            print(f"Turtle rotated right to {new_deg} degrees")
         except Exception as e:
             print(f"Error turning right: {e}")
 
