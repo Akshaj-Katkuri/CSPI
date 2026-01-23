@@ -158,8 +158,6 @@ class RobotCommands:
                 data[row][col] = new_deg
             with open(self.path, "w") as f:
                 json.dump(data, f, indent=2)
-
-            print(f"Turtle rotated left to {new_deg} degrees")
         except Exception as e:
             print(f"Error turning left: {e}")
 

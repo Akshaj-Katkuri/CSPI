@@ -271,12 +271,12 @@ class BuiltInFunction(BaseFunction):
         return RTresult.success(Number.null)
     execute_move_forward.arg_names = []
 
-    def execute_turn_left(self, exec_context: Context): 
+    def execute_rotate_left(self, exec_context: Context): 
         RTresult = RunTimeResult()
         robot: Robot = global_symbol_table.get(100)
 
         time.sleep(2)
-        RTresult.register(robot.turn_left())
+        RTresult.register(robot.rotate_left())
         
         if RTresult.error: 
             RTresult.error.pos_start = self.pos_start
@@ -284,14 +284,14 @@ class BuiltInFunction(BaseFunction):
             return RTresult
         
         return RTresult.success(Number.null)
-    execute_turn_left.arg_names = []
+    execute_rotate_left.arg_names = []
     
-    def execute_turn_right(self, exec_context: Context): 
+    def execute_rotate_right(self, exec_context: Context): 
         RTresult = RunTimeResult()
         robot: Robot = global_symbol_table.get(100)
 
         time.sleep(2)
-        RTresult.register(robot.turn_right())
+        RTresult.register(robot.rotate_right())
         
         if RTresult.error: 
             RTresult.error.pos_start = self.pos_start
@@ -299,7 +299,7 @@ class BuiltInFunction(BaseFunction):
             return RTresult
         
         return RTresult.success(Number.null)
-    execute_turn_right.arg_names = []
+    execute_rotate_right.arg_names = []
 
     def execute_can_move(self, exec_context: Context): 
         _direction = exec_context.symbol_table.get("direction")
@@ -368,8 +368,8 @@ BuiltInFunction.remove      = BuiltInFunction("remove")
 BuiltInFunction.length      = BuiltInFunction("length")
 BuiltInFunction.create_grid = BuiltInFunction("create_grid")
 BuiltInFunction.move_forward= BuiltInFunction("move_forward")
-BuiltInFunction.turn_left   = BuiltInFunction("turn_left")
-BuiltInFunction.turn_right  = BuiltInFunction("turn_right")
+BuiltInFunction.rotate_left   = BuiltInFunction("rotate_left")
+BuiltInFunction.rotate_right  = BuiltInFunction("rotate_right")
 BuiltInFunction.can_move    = BuiltInFunction("can_move")
 BuiltInFunction.run         = BuiltInFunction("run")
 
@@ -692,8 +692,8 @@ global_symbol_table.set("REMOVE", BuiltInFunction.remove)
 global_symbol_table.set("LENGTH", BuiltInFunction.length)
 global_symbol_table.set("CREATE_GRID", BuiltInFunction.create_grid)
 global_symbol_table.set("MOVE_FORWARD", BuiltInFunction.move_forward)
-global_symbol_table.set("TURN_LEFT", BuiltInFunction.turn_left)
-global_symbol_table.set("TURN_RIGHT", BuiltInFunction.turn_right)
+global_symbol_table.set("ROTATE_LEFT", BuiltInFunction.rotate_left)
+global_symbol_table.set("ROATE_RIGHT", BuiltInFunction.rotate_right)
 global_symbol_table.set("CAN_MOVE", BuiltInFunction.can_move)
 global_symbol_table.set("FORWARD", String("FORWARD"))
 global_symbol_table.set("RUN", BuiltInFunction.run)
