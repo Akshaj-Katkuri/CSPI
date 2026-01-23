@@ -1,1 +1,12 @@
 code.txt
+__pycache__/interpreter.cpython-314.pyc
+__pycache__/values.cpython-314.pyc
+lexer/__pycache__/lexer.cpython-314.pyc
+lexer/__pycache__/tokens.cpython-314.pyc
+parser/__pycache__/nodes.cpython-314.pyc
+parser/__pycache__/parser.cpython-314.pyc
+utils/__pycache__/context.cpython-314.pyc
+utils/__pycache__/errors.cpython-314.pyc
+utils/__pycache__/position.cpython-314.pyc
+utils/__pycache__/results.cpython-314.pyc
+utils/__pycache__/utility_functions.cpython-314.pyc
