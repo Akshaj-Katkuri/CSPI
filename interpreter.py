@@ -368,13 +368,12 @@ BuiltInFunction.remove      = BuiltInFunction("remove")
 BuiltInFunction.length      = BuiltInFunction("length")
 BuiltInFunction.create_grid = BuiltInFunction("create_grid")
 BuiltInFunction.move_forward= BuiltInFunction("move_forward")
-BuiltInFunction.rotate_left   = BuiltInFunction("rotate_left")
-BuiltInFunction.rotate_right  = BuiltInFunction("rotate_right")
+BuiltInFunction.rotate_left = BuiltInFunction("rotate_left")
+BuiltInFunction.rotate_right= BuiltInFunction("rotate_right")
 BuiltInFunction.can_move    = BuiltInFunction("can_move")
 BuiltInFunction.run         = BuiltInFunction("run")
 
 
-# Interpreter
 #TODO: Make static class, hard challenge
 class Interpreter: 
     def visit(self, node, context: Context) -> RunTimeResult: 
