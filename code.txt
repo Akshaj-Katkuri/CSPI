@@ -1,17 +1,11 @@
-PROCEDURE test(a)
-{
-    REPEAT 5 TIMES
-    {
-        IF (5 <= 10)
-        {
-            DISPLAY(a)
-        } ELSE
-        {
-            DISPLAY("5 is less than 10")
-        }
-    }
-}
+CREATE_GRID()
 
-DISPLAY("Enter a number: ")
-num = INPUT()
-test(num)
+n <- 3
+
+REPEAT 3 TIMES {
+    REPEAT n TIMES {
+        MOVE_FORWARD()
+    }
+    ROTATE_LEFT()
+    n <- n - 1
+}

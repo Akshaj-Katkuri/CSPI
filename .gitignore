@@ -1,4 +1,13 @@
 code.txt
+__pycache__/
+*.pyc
+robot/grid/current_grid.json
+robot/grid/initial_grid.json
+robot/__pycache__/robot_commands.cpython-313.pyc
+robot/grid/__pycache__/grid_maker.cpython-313.pyc
+robot/grid/__pycache__/grid_runner.cpython-313.pyc
+utils/__pycache__/context.cpython-313.pyc
+utils/__pycache__/errors.cpython-313.pyc
 __pycache__/interpreter.cpython-314.pyc
 __pycache__/values.cpython-314.pyc
 lexer/__pycache__/lexer.cpython-314.pyc

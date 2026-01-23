@@ -1,11 +1,12 @@
 from utils.position import Position
 
+
 class Context: 
     def __init__(self, display_name, parent=None, parent_entry_pos: Position = None):
         self.display_name = display_name
         self.parent = parent
         self.parent_entry_pos: Position = parent_entry_pos
-        self.symbol_table: SymbolTable = None
+        self.symbol_table: 'SymbolTable' = None
 
 class SymbolTable:
     def __init__(self, parent=None):

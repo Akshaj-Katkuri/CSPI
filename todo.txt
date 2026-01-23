@@ -4,11 +4,6 @@ Variables:
  - including expressions when assigning a variable gives an error. Ex: VAR a = (5 + 6) gives an error saying it can't convert '6)' into an int. 
  - You can declare variables while declaring other variables. Ex: VAR a = VAR b = 7 gives both 'a' and 'b' the value 7. This works without the keyword 'VAR' too. 
 
-Types: 
- - Add boolean Types
- - Support for boolean types with logical operators
- - Change default symbol tables for 'TRUE' and 'FALSE' to boolean instead of Number object
-
 Error: 
  - Bad error messages for comparisn expressions
  - Bad error message when this: a + +
@@ -17,6 +12,9 @@ Error:
 
 WHILE and FOR loops: 
  - Currently FOR and WHILE loops return list by default. Check if we want to change that.
+
+If statements: 
+ - For some reason, if in the interpreter in visit_ifnode, the condition_value is somehow becoming a type Number. There is a tiny workaround for this as even if Number is storing a bool value for some reason, the function.is_true() works. 
 
 Lexer: 
  - Change lexing process to how POW is done for all comparisn operators. 
@@ -38,6 +36,14 @@ Built-in Functions:
  - Check if we want input_int (removed), or add int() function, or auto convert to int if possible. 
  - Test all the built-in functions
 
+Robot: 
+ - Throws a small error randomly when you run a command. This is because for a split second as the .json file is being updated, it doesn't have a char for the turtle for a split second in which it gets confused. 
+
 Comments: 
  - in skip_comment(), if a comment is on a single line with no new line, then while loop will keep calling advance() indefinitely since no new line found
  - in the event that there is a comment that is the only comment in the file with no code following after it, the program detects an empty line as an invalid syntax which throws a confusing error. This error has less to do with the comment function and more to do with the program not ignoring an empty line
+
+Grid: 
+ - turn_left(), turn_right() should be renamed to rotate_left(), rotate_right()
+ - Remove the giant print message that comes when grid_runner is closed()
+ - Move all move_forward error messages into the Robot commands to then use register() in robot.py. turn left or right has error message: robot not found in grid. This should also be a Grid Error which will be wrapped in register() method. 

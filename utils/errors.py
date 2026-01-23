@@ -54,3 +54,8 @@ class RunTimeError(Error):
             ctx = ctx.parent
         
         return 'Traceback (most recent call last):\n' + result
+    
+class GridError(Error): 
+    def __init__(self, pos_start=None, pos_end=None, details=''):
+        super().__init__(pos_start, pos_end, 'Grid Error', details)
+        

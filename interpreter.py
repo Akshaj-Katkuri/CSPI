@@ -1,5 +1,6 @@
 import os
 import random
+import time
 
 from values import *
 from utils.context import Context, SymbolTable
@@ -10,7 +11,7 @@ from parser.nodes import *
 from lexer.lexer import Lexer
 from parser.parser import Parser
 
-# from robot import robot
+from robot.robot import Robot
 
 class BaseFunction(Value): 
     def __init__(self, name):
@@ -124,7 +125,17 @@ class BuiltInFunction(BaseFunction):
 
     def execute_input(self, exec_context): #TODO: Maybe make this fancier with string argument?
         text = input()
-        return RunTimeResult().success(String(text))
+        txt = text.strip()
+        if txt == "":
+            return RunTimeResult().success(String(text))
+
+        try:
+            fval = float(txt)
+            if fval.is_integer():
+                return RunTimeResult().success(Number(int(fval)))
+            return RunTimeResult().success(Number(fval))
+        except Exception:
+            return RunTimeResult().success(String(text))
     execute_input.arg_names = []
 
     def execute_random(self, exec_context):
@@ -153,7 +164,7 @@ class BuiltInFunction(BaseFunction):
         return RunTimeResult().success(Number.null)
     execute_clear.arg_names = []
 
-    def execute_append(self, exec_context): 
+    def execute_append(self, exec_context: Context): 
         list_ = exec_context.symbol_table.get('list')
         value_ = exec_context.symbol_table.get('value')
 
@@ -220,7 +231,7 @@ class BuiltInFunction(BaseFunction):
         return RunTimeResult().success(element)
     execute_remove.arg_names = ['list', 'index']
 
-    def execute_length(self, exec_context): 
+    def execute_length(self, exec_context: Context): 
         list_ = exec_context.symbol_table.get('list')
 
         if not isinstance(list_, List): 
@@ -233,11 +244,85 @@ class BuiltInFunction(BaseFunction):
         return RunTimeResult().success(Number(len(list_.elements)))
     execute_length.arg_names = ['list']
 
-    def execute_create_grid(self, exec_context):
-        # robot.CREATE_GRID()
-        print("not yet implemented")
-        return RunTimeResult().success(Number.null)
+    def execute_create_grid(self, exec_context: Context): #TODO: This sucks make it better
+        RTresult = RunTimeResult()
+        robot: Robot = global_symbol_table.get(100)
+
+        RTresult.register(robot.create_grid())
+        if RTresult.error: 
+            RTresult.error.pos_start = self.pos_start
+            RTresult.error.pos_end = self.pos_end
+            return RTresult
+
+        return RTresult.success(Number.null)
     execute_create_grid.arg_names = []
+
+    def execute_move_forward(self, exec_context: Context): 
+        RTresult = RunTimeResult()
+        robot: Robot = global_symbol_table.get(100)
+
+        time.sleep(2)
+        RTresult.register(robot.move_forward())
+        if RTresult.error: 
+            RTresult.error.pos_start = self.pos_start
+            RTresult.error.pos_end = self.pos_end
+            return RTresult
+        
+        return RTresult.success(Number.null)
+    execute_move_forward.arg_names = []
+
+    def execute_rotate_left(self, exec_context: Context): 
+        RTresult = RunTimeResult()
+        robot: Robot = global_symbol_table.get(100)
+
+        time.sleep(2)
+        RTresult.register(robot.rotate_left())
+        
+        if RTresult.error: 
+            RTresult.error.pos_start = self.pos_start
+            RTresult.error.pos_end = self.pos_end
+            return RTresult
+        
+        return RTresult.success(Number.null)
+    execute_rotate_left.arg_names = []
+    
+    def execute_rotate_right(self, exec_context: Context): 
+        RTresult = RunTimeResult()
+        robot: Robot = global_symbol_table.get(100)
+
+        time.sleep(2)
+        RTresult.register(robot.rotate_right())
+        
+        if RTresult.error: 
+            RTresult.error.pos_start = self.pos_start
+            RTresult.error.pos_end = self.pos_end
+            return RTresult
+        
+        return RTresult.success(Number.null)
+    execute_rotate_right.arg_names = []
+
+    def execute_can_move(self, exec_context: Context): 
+        _direction = exec_context.symbol_table.get("direction")
+
+        if isinstance(_direction, str): 
+            _direction = String(_direction)
+        
+        RTresult = RunTimeResult()
+        robot: Robot = global_symbol_table.get(100)
+
+        if (not isinstance(_direction, String)
+            or _direction.value not in ["FORWARD", "RIGHT", "LEFT", "BACKWARD"]): 
+            return RunTimeResult().failure(RunTimeError(
+                self.pos_start, self.pos_end,
+                "Argument must be one of these valid directions: FORWARD, RIGHT, LEFT, BACKWARD", 
+                exec_context
+            ))
+        
+        value = RTresult.register(robot.can_move(_direction.value))
+        if RTresult.error: return RTresult
+        
+        return RunTimeResult().success(value)
+    execute_can_move.arg_names = ["direction"]
 
     def execute_run(self, exec_context): 
         fn = exec_context.symbol_table.get('fn')
@@ -282,7 +367,12 @@ BuiltInFunction.insert      = BuiltInFunction("insert")
 BuiltInFunction.remove      = BuiltInFunction("remove")
 BuiltInFunction.length      = BuiltInFunction("length")
 BuiltInFunction.create_grid = BuiltInFunction("create_grid")
+BuiltInFunction.move_forward= BuiltInFunction("move_forward")
+BuiltInFunction.rotate_left   = BuiltInFunction("rotate_left")
+BuiltInFunction.rotate_right  = BuiltInFunction("rotate_right")
+BuiltInFunction.can_move    = BuiltInFunction("can_move")
 BuiltInFunction.run         = BuiltInFunction("run")
+
 
 # Interpreter
 #TODO: Make static class, hard challenge
@@ -390,7 +480,7 @@ class Interpreter:
 
     def visit_UnaryOperatorNode(self, node: UnaryOperatorNode, context: Context):
         RTresult = RunTimeResult()
-        number: Number = RTresult.register(self.visit(node.node, context))
+        number = RTresult.register(self.visit(node.node, context))
         if RTresult.should_return(): return RTresult
 
         error = None
@@ -409,7 +499,7 @@ class Interpreter:
         RTresult = RunTimeResult()
 
         for condition, expr, should_return_null in node.cases: 
-            condition_value: Number = RTresult.register(self.visit(condition, context))
+            condition_value = RTresult.register(self.visit(condition, context))
             if RTresult.should_return(): return RTresult
 
             if condition_value.is_true(): 
@@ -518,8 +608,12 @@ class Interpreter:
         RTresult = RunTimeResult()
         elements = []
 
-        count: Token = node.count_token
-        if RTresult.should_return(): return RTresult
+        if node.count_token:
+            count: Token = node.count_token
+            if RTresult.should_return(): return RTresult
+        else: 
+            count = RTresult.register(self.visit(node.count_node, context))
+            if RTresult.should_return(): return RTresult
 
         for i in range(count.value): 
             value = RTresult.register(self.visit(node.body_node, context))
@@ -587,6 +681,7 @@ class Interpreter:
     
 global_symbol_table = SymbolTable()
 global_symbol_table.set("NULL", Number.null)
+global_symbol_table.set(100, Robot()) # 100 is just arbitrary. Not using a string so that way this isn't accessible to the user. 
 global_symbol_table.set("DISPLAY", BuiltInFunction.display)
 global_symbol_table.set("INPUT", BuiltInFunction.input)
 global_symbol_table.set("RANDOM", BuiltInFunction.random)
@@ -596,6 +691,11 @@ global_symbol_table.set("INSERT", BuiltInFunction.insert)
 global_symbol_table.set("REMOVE", BuiltInFunction.remove)
 global_symbol_table.set("LENGTH", BuiltInFunction.length)
 global_symbol_table.set("CREATE_GRID", BuiltInFunction.create_grid)
+global_symbol_table.set("MOVE_FORWARD", BuiltInFunction.move_forward)
+global_symbol_table.set("ROTATE_LEFT", BuiltInFunction.rotate_left)
+global_symbol_table.set("ROATE_RIGHT", BuiltInFunction.rotate_right)
+global_symbol_table.set("CAN_MOVE", BuiltInFunction.can_move)
+global_symbol_table.set("FORWARD", String("FORWARD"))
 global_symbol_table.set("RUN", BuiltInFunction.run)
 
 def run(fn, text):
