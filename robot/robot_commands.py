@@ -115,7 +115,7 @@ class RobotCommands:
             print(f"Error moving forward: {e}")
             return None
 
-    def turn_left(self, times=1):
+    def rotate_left(self, times=1):
         """Rotate the turtle left (counterclockwise) by 90 degrees per time.
 
         times: number of 90-degree steps to turn left.
@@ -161,7 +161,7 @@ class RobotCommands:
         except Exception as e:
             print(f"Error turning left: {e}")
 
-    def turn_right(self, times=1):
+    def rotate_right(self, times=1):
         """Rotate the turtle right (clockwise) by 90 degrees per time.
 
         times: number of 90-degree steps to turn right.

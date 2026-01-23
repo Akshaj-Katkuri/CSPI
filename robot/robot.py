@@ -96,7 +96,8 @@ class Robot:
 
         if self.running: 
             result = RTresult.register(self.commands.move_forward())
-            if RTresult.error: return RTresult
+            if RTresult.error: 
+                return RTresult
 
             if result is None: 
                 return RTresult.success(Number.null)
@@ -110,18 +111,18 @@ class Robot:
         else: 
             return RTresult.failure(GridError(details='User closed grid runner'))
 
-    def turn_left(self): 
+    def rotate_left(self): 
         if self.running: 
-            self.commands.turn_left()
+            self.commands.rotate_left()
             return RunTimeResult().success(Number.null)
         elif not self.grid_created:
             return RunTimeResult().failure(GridError(details="Grid has not yet been created. To create the grid, try calling the function 'CREATE_GRID()' at beginning of the file. "))
         else: 
             return RunTimeResult().failure(GridError(details='User closed grid runner'))
 
-    def turn_right(self): 
+    def rotate_right(self): 
         if self.running: 
-            self.commands.turn_right()
+            self.commands.rotate_right()
             return RunTimeResult().success(Number.null)
         elif not self.grid_created:
             return RunTimeResult().failure(GridError(details="Grid has not yet been created. To create the grid, try calling the function 'CREATE_GRID()' at beginning of the file. "))
@@ -152,9 +153,9 @@ if __name__ == '__main__':
         if control == 1: 
             robot.move_forward()
         elif control == 2: 
-            robot.turn_left()
+            robot.rotate_left()
         elif control == 3: 
-            robot.turn_right()
+            robot.rotate_right()
         elif control == 4: 
             dir = input("Direction: ").upper()
         elif control == 0: 

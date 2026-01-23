@@ -6,6 +6,6 @@ REPEAT 3 TIMES {
     REPEAT n TIMES {
         MOVE_FORWARD()
     }
-    TURN_LEFT()
+    ROTATE_LEFT()
     n <- n - 1
 }
