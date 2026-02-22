@@ -38,7 +38,9 @@ class GridMaker:
     have exported the grid to the provided path.
     """
 
-    def __init__(self, path="initial_grid.json", rows=DEFAULT_GRID_ROWS, cols=DEFAULT_GRID_COLS):
+    def __init__(
+        self, path="initial_grid.json", rows=DEFAULT_GRID_ROWS, cols=DEFAULT_GRID_COLS
+    ):
         # Resolve path relative to robot folder
         if not os.path.isabs(path):
             path = os.path.join(os.path.dirname(__file__), path)
@@ -80,7 +82,9 @@ class GridMaker:
     def load_grid_from_json(self, path=None):
         path = path or self.path
         if not os.path.exists(path):
-            self.grid = [[EMPTY for _ in range(self.GRID_COLS)] for _ in range(self.GRID_ROWS)]
+            self.grid = [
+                [EMPTY for _ in range(self.GRID_COLS)] for _ in range(self.GRID_ROWS)
+            ]
             self.turtle_pos = None
             self.goal_pos = None
             self.turtle_dir = 0
@@ -97,7 +101,9 @@ class GridMaker:
             new_cols = max(MIN_SIZE, min(MAX_SIZE, file_cols))
 
             self.GRID_ROWS, self.GRID_COLS = new_rows, new_cols
-            self.grid = [[EMPTY for _ in range(self.GRID_COLS)] for _ in range(self.GRID_ROWS)]
+            self.grid = [
+                [EMPTY for _ in range(self.GRID_COLS)] for _ in range(self.GRID_ROWS)
+            ]
             self.turtle_pos = None
             self.goal_pos = None
             self.turtle_dir = 0
@@ -123,7 +129,9 @@ class GridMaker:
 
         except Exception as e:
             print("Failed to load", path, ":", e)
-            self.grid = [[EMPTY for _ in range(self.GRID_COLS)] for _ in range(self.GRID_ROWS)]
+            self.grid = [
+                [EMPTY for _ in range(self.GRID_COLS)] for _ in range(self.GRID_ROWS)
+            ]
             self.turtle_pos = None
             self.goal_pos = None
             self.turtle_dir = 0
@@ -160,9 +168,13 @@ class GridMaker:
         self.grid = new_grid
         self.GRID_ROWS, self.GRID_COLS = new_rows, new_cols
 
-        if self.turtle_pos and (self.turtle_pos[0] >= new_rows or self.turtle_pos[1] >= new_cols):
+        if self.turtle_pos and (
+            self.turtle_pos[0] >= new_rows or self.turtle_pos[1] >= new_cols
+        ):
             self.turtle_pos = None
-        if self.goal_pos and (self.goal_pos[0] >= new_rows or self.goal_pos[1] >= new_cols):
+        if self.goal_pos and (
+            self.goal_pos[0] >= new_rows or self.goal_pos[1] >= new_cols
+        ):
             self.goal_pos = None
 
     # --- drawing helpers ---
@@ -173,35 +185,21 @@ class GridMaker:
             pad = 1
 
         if direction == 0:  # right
-            points = [
-                (cx - pad, cy - pad),
-                (cx - pad, cy + pad),
-                (cx + pad, cy)
-            ]
+            points = [(cx - pad, cy - pad), (cx - pad, cy + pad), (cx + pad, cy)]
         elif direction == 1:  # down
-            points = [
-                (cx - pad, cy - pad),
-                (cx + pad, cy - pad),
-                (cx, cy + pad)
-            ]
+            points = [(cx - pad, cy - pad), (cx + pad, cy - pad), (cx, cy + pad)]
         elif direction == 2:  # left
-            points = [
-                (cx + pad, cy - pad),
-                (cx + pad, cy + pad),
-                (cx - pad, cy)
-            ]
+            points = [(cx + pad, cy - pad), (cx + pad, cy + pad), (cx - pad, cy)]
         elif direction == 3:  # up
-            points = [
-                (cx - pad, cy + pad),
-                (cx + pad, cy + pad),
-                (cx, cy - pad)
-            ]
+            points = [(cx - pad, cy + pad), (cx + pad, cy + pad), (cx, cy - pad)]
 
         pygame.draw.polygon(surface, color, points)
 
     def draw_grid(self):
         grid_area_height = HEIGHT - TOOLBAR_HEIGHT
-        self.CELL_SIZE = min(WIDTH // self.GRID_COLS, grid_area_height // self.GRID_ROWS)
+        self.CELL_SIZE = min(
+            WIDTH // self.GRID_COLS, grid_area_height // self.GRID_ROWS
+        )
 
         grid_width = self.GRID_COLS * self.CELL_SIZE
         grid_height = self.GRID_ROWS * self.CELL_SIZE
@@ -210,9 +208,12 @@ class GridMaker:
 
         for r in range(self.GRID_ROWS):
             for c in range(self.GRID_COLS):
-                rect = pygame.Rect(self.offset_x + c * self.CELL_SIZE,
-                                   self.offset_y + r * self.CELL_SIZE,
-                                   self.CELL_SIZE, self.CELL_SIZE)
+                rect = pygame.Rect(
+                    self.offset_x + c * self.CELL_SIZE,
+                    self.offset_y + r * self.CELL_SIZE,
+                    self.CELL_SIZE,
+                    self.CELL_SIZE,
+                )
 
                 if self.grid[r][c] == EMPTY:
                     pygame.draw.rect(self.screen, WHITE, rect)
@@ -243,8 +244,12 @@ class GridMaker:
                     pygame.draw.rect(self.screen, GREEN, rect, 4, border_radius=8)
 
             if self.current_tool == TURTLE:
-                pygame.draw.rect(self.screen, LIGHT_GRAY, self.rotate_left_button, border_radius=8)
-                pygame.draw.rect(self.screen, LIGHT_GRAY, self.rotate_right_button, border_radius=8)
+                pygame.draw.rect(
+                    self.screen, LIGHT_GRAY, self.rotate_left_button, border_radius=8
+                )
+                pygame.draw.rect(
+                    self.screen, LIGHT_GRAY, self.rotate_right_button, border_radius=8
+                )
                 self.screen.blit(self.rotate_left_icon, self.rotate_left_button)
                 self.screen.blit(self.rotate_right_icon, self.rotate_right_button)
 
@@ -259,12 +264,18 @@ class GridMaker:
             self.screen.blit(font.render("-", True, BLACK), self.col_minus.move(8, 3))
             self.screen.blit(font.render("+", True, BLACK), self.col_plus.move(8, 3))
 
-            self.screen.blit(font.render(f"Rows: {self.GRID_ROWS}", True, BLACK), (WIDTH - 270, 25))
-            self.screen.blit(font.render(f"Cols: {self.GRID_COLS}", True, BLACK), (WIDTH - 270, 65))
+            self.screen.blit(
+                font.render(f"Rows: {self.GRID_ROWS}", True, BLACK), (WIDTH - 270, 25)
+            )
+            self.screen.blit(
+                font.render(f"Cols: {self.GRID_COLS}", True, BLACK), (WIDTH - 270, 65)
+            )
 
         pygame.draw.rect(self.screen, GREEN, self.confirm_button, border_radius=10)
         font = pygame.font.SysFont(None, 28, bold=True)
-        self.screen.blit(font.render("Confirm", True, WHITE), self.confirm_button.move(5, 5))
+        self.screen.blit(
+            font.render("Confirm", True, WHITE), self.confirm_button.move(5, 5)
+        )
 
     def place_item(self, row, col):
         if self.current_tool == WALL:
@@ -293,14 +304,36 @@ class GridMaker:
         self.button_size = 50
         self.padding = 15
         self.buttons = {
-            TURTLE: pygame.Rect(self.padding, self.padding, self.button_size, self.button_size),
-            WALL: pygame.Rect(2 * self.padding + self.button_size, self.padding, self.button_size, self.button_size),
-            GOAL: pygame.Rect(3 * self.padding + 2 * self.button_size, self.padding, self.button_size, self.button_size)
+            TURTLE: pygame.Rect(
+                self.padding, self.padding, self.button_size, self.button_size
+            ),
+            WALL: pygame.Rect(
+                2 * self.padding + self.button_size,
+                self.padding,
+                self.button_size,
+                self.button_size,
+            ),
+            GOAL: pygame.Rect(
+                3 * self.padding + 2 * self.button_size,
+                self.padding,
+                self.button_size,
+                self.button_size,
+            ),
         }
 
-        self.confirm_button = pygame.Rect(WIDTH - 110, TOOLBAR_HEIGHT//2 - 20, 80, 40)
-        self.rotate_left_button = pygame.Rect(4 * self.padding + 3 * self.button_size, self.padding, self.button_size, self.button_size)
-        self.rotate_right_button = pygame.Rect(5 * self.padding + 4 * self.button_size, self.padding, self.button_size, self.button_size)
+        self.confirm_button = pygame.Rect(WIDTH - 110, TOOLBAR_HEIGHT // 2 - 20, 80, 40)
+        self.rotate_left_button = pygame.Rect(
+            4 * self.padding + 3 * self.button_size,
+            self.padding,
+            self.button_size,
+            self.button_size,
+        )
+        self.rotate_right_button = pygame.Rect(
+            5 * self.padding + 4 * self.button_size,
+            self.padding,
+            self.button_size,
+            self.button_size,
+        )
 
         # image paths relative to this file
         base = os.path.dirname(__file__)
@@ -309,8 +342,12 @@ class GridMaker:
         try:
             self.rotate_left_icon = pygame.image.load(left_path).convert_alpha()
             self.rotate_right_icon = pygame.image.load(right_path).convert_alpha()
-            self.rotate_left_icon = pygame.transform.smoothscale(self.rotate_left_icon, (self.button_size, self.button_size))
-            self.rotate_right_icon = pygame.transform.smoothscale(self.rotate_right_icon, (self.button_size, self.button_size))
+            self.rotate_left_icon = pygame.transform.smoothscale(
+                self.rotate_left_icon, (self.button_size, self.button_size)
+            )
+            self.rotate_right_icon = pygame.transform.smoothscale(
+                self.rotate_right_icon, (self.button_size, self.button_size)
+            )
         except Exception:
             # fall back to None — draw buttons without icons
             self.rotate_left_icon = None
@@ -338,7 +375,9 @@ class GridMaker:
                     running = False
                     pygame.quit()
 
-                    return RunTimeResult().failure(GridError(details='User closed grid maker'))
+                    return RunTimeResult().failure(
+                        GridError(details="User closed grid maker")
+                    )
 
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     mx, my = pygame.mouse.get_pos()
@@ -360,19 +399,34 @@ class GridMaker:
                                     self.turtle_dir = (self.turtle_dir + 1) % 4
                                     continue
 
-                            if self.row_minus.collidepoint(mx, my) and self.GRID_ROWS > MIN_SIZE:
+                            if (
+                                self.row_minus.collidepoint(mx, my)
+                                and self.GRID_ROWS > MIN_SIZE
+                            ):
                                 self.resize_grid(self.GRID_ROWS - 1, self.GRID_COLS)
-                            elif self.row_plus.collidepoint(mx, my) and self.GRID_ROWS < MAX_SIZE:
+                            elif (
+                                self.row_plus.collidepoint(mx, my)
+                                and self.GRID_ROWS < MAX_SIZE
+                            ):
                                 self.resize_grid(self.GRID_ROWS + 1, self.GRID_COLS)
-                            elif self.col_minus.collidepoint(mx, my) and self.GRID_COLS > MIN_SIZE:
+                            elif (
+                                self.col_minus.collidepoint(mx, my)
+                                and self.GRID_COLS > MIN_SIZE
+                            ):
                                 self.resize_grid(self.GRID_ROWS, self.GRID_COLS - 1)
-                            elif self.col_plus.collidepoint(mx, my) and self.GRID_COLS < MAX_SIZE:
+                            elif (
+                                self.col_plus.collidepoint(mx, my)
+                                and self.GRID_COLS < MAX_SIZE
+                            ):
                                 self.resize_grid(self.GRID_ROWS, self.GRID_COLS + 1)
 
                             elif my > TOOLBAR_HEIGHT:
                                 col = (mx - self.offset_x) // self.CELL_SIZE
                                 row = (my - self.offset_y) // self.CELL_SIZE
-                                if 0 <= row < self.GRID_ROWS and 0 <= col < self.GRID_COLS:
+                                if (
+                                    0 <= row < self.GRID_ROWS
+                                    and 0 <= col < self.GRID_COLS
+                                ):
                                     if self.current_tool == WALL:
                                         if self.grid[row][col] == EMPTY:
                                             self.drag_action = "add"
@@ -400,15 +454,25 @@ class GridMaker:
                     self.dragging = False
                     self.drag_action = None
 
-                elif event.type == pygame.MOUSEMOTION and self.dragging and self.current_tool == WALL:
+                elif (
+                    event.type == pygame.MOUSEMOTION
+                    and self.dragging
+                    and self.current_tool == WALL
+                ):
                     mx, my = event.pos
                     if my > TOOLBAR_HEIGHT:
                         col = (mx - self.offset_x) // self.CELL_SIZE
                         row = (my - self.offset_y) // self.CELL_SIZE
                         if 0 <= row < self.GRID_ROWS and 0 <= col < self.GRID_COLS:
-                            if self.drag_action == "add" and self.grid[row][col] == EMPTY:
+                            if (
+                                self.drag_action == "add"
+                                and self.grid[row][col] == EMPTY
+                            ):
                                 self.grid[row][col] = WALL
-                            elif self.drag_action == "remove" and self.grid[row][col] == WALL:
+                            elif (
+                                self.drag_action == "remove"
+                                and self.grid[row][col] == WALL
+                            ):
                                 self.grid[row][col] = EMPTY
 
             self.draw_toolbar()
@@ -417,10 +481,11 @@ class GridMaker:
 
         pygame.quit()
         return RunTimeResult().success(self.path)
-    
-if __name__ == "__main__": 
+
+
+if __name__ == "__main__":
     output = GridMaker().run()
-    
+
     path = Path("grid_output.pkl")
-    with path.open("wb") as f: 
+    with path.open("wb") as f:
         pickle.dump(output, f)

@@ -1,4 +1,4 @@
-class Position: 
+class Position:
     def __init__(self, idx, ln, col, fn, ftxt):
         self.idx = idx
         self.ln = ln
@@ -10,18 +10,18 @@ class Position:
         self.idx += 1
         self.col += 1
 
-        if current_char == '\n':
+        if current_char == "\n":
             self.ln += 1
             self.col = 0
-        
+
         return self
-    
-    def revert(self, idx, col, ln): 
+
+    def revert(self, idx, col, ln):
         self.idx = idx
         self.col = col
         self.ln = ln
 
         return self
-    
-    def copy(self): 
+
+    def copy(self):
         return Position(self.idx, self.ln, self.col, self.fn, self.ftxt)

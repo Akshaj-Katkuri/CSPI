@@ -1,0 +1,17 @@
+PROCEDURE test(a)
+{
+    REPEAT 5 TIMES
+    {
+        IF (a <= 10)
+        {
+            DISPLAY(a)
+        } ELSE
+        {
+            DISPLAY("5 is less than 10")
+        }
+    }
+}
+
+DISPLAY("Enter a number: ")
+num = INPUT()
+test(num)

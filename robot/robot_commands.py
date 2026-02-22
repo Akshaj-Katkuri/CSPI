@@ -4,17 +4,20 @@ import os
 from utils.errors import GridError
 from utils.results import RunTimeResult
 
-# TODO: Prob should make this a static class, passing path in as another parameter. 
-class RobotCommands: 
+
+# TODO: Prob should make this a static class, passing path in as another parameter.
+class RobotCommands:
     def __init__(self, current_grid_path):
         # Resolve path relative to robot folder (where this file is)
         if not os.path.isabs(current_grid_path):
-            current_grid_path = os.path.join(os.path.dirname(__file__), current_grid_path)
+            current_grid_path = os.path.join(
+                os.path.dirname(__file__), current_grid_path
+            )
         self.path = current_grid_path
 
     def move_forward(self, steps=1):
         """Move the turtle forward based on its current direction.
-        
+
         Direction encoding in JSON: 0=right, 90=up, 180=left, 270=down (counterclockwise positive)
         """
         RTresult = RunTimeResult()
@@ -23,7 +26,7 @@ class RobotCommands:
             # Load current grid state
             with open(self.path, "r") as f:
                 data = json.load(f)
-            
+
             # Find turtle position and direction. Turtle may be stored as a number
             # (deg) or as an overlapping list [under, deg].
             turtle_pos = None
@@ -36,19 +39,23 @@ class RobotCommands:
                         turtle_pos = (r, c)
                         turtle_dir_deg = int(val) % 360
                         break
-                    if isinstance(val, list) and len(val) >= 2 and isinstance(val[1], (int, float)):
+                    if (
+                        isinstance(val, list)
+                        and len(val) >= 2
+                        and isinstance(val[1], (int, float))
+                    ):
                         turtle_pos = (r, c)
                         turtle_dir_deg = int(val[1]) % 360
                         break
                 if turtle_pos:
                     break
-            
+
             if turtle_pos is None:
                 return GridError(details="No turtle found on grid.")
-            
+
             # Calculate new position based on direction and steps
             row, col = turtle_pos
-            
+
             for _ in range(steps):
                 if turtle_dir_deg == 0:  # right
                     col += 1
@@ -58,27 +65,30 @@ class RobotCommands:
                     col -= 1
                 elif turtle_dir_deg == 270:  # down
                     row += 1
-            
+
             # Clamp to grid bounds
             max_rows = len(data)
             max_cols = max((len(r) for r in data), default=0)
-            
+
             # Check if out of bounds
             if row < 0 or row >= max_rows or col < 0 or col >= max_cols:
-                return RTresult.failure(GridError(details="Robot is trying to move out of bounds."))
+                return RTresult.failure(
+                    GridError(details="Robot is trying to move out of bounds.")
+                )
                 # raise RuntimeError(f"Turtle would move out of bounds to ({row}, {col}). Grid bounds: rows [0, {max_rows-1}], cols [0, {max_cols-1}]")
-            
+
             # Update grid: remove turtle from old position, but preserve underlying
             # wall/goal if present. Also check target cell for overlapping.
-            old_pos = None
             for r in range(len(data)):
                 for c in range(len(data[r])):
                     val = data[r][c]
                     if isinstance(val, (int, float)):
-                        old_pos = (r, c)
                         data[r][c] = None
-                    elif isinstance(val, list) and len(val) >= 2 and isinstance(val[1], (int, float)):
-                        old_pos = (r, c)
+                    elif (
+                        isinstance(val, list)
+                        and len(val) >= 2
+                        and isinstance(val[1], (int, float))
+                    ):
                         # restore underlying value
                         data[r][c] = val[0] if val[0] is not None else None
 
@@ -86,8 +96,14 @@ class RobotCommands:
             # underlying wall/goal, store as [under, deg] so the UI can render
             # the turtle overlapping the element.
             target_val = data[row][col]
-            if isinstance(target_val, (int, float)) or (isinstance(target_val, list) and len(target_val) >= 2 and isinstance(target_val[1], (int, float))):
-                return RTresult.failure(GridError(details="Target occupied by another turtle."))
+            if isinstance(target_val, (int, float)) or (
+                isinstance(target_val, list)
+                and len(target_val) >= 2
+                and isinstance(target_val[1], (int, float))
+            ):
+                return RTresult.failure(
+                    GridError(details="Target occupied by another turtle.")
+                )
 
             if target_val == "Wall" or target_val == "WALL" or target_val == 1:
                 data[row][col] = ["Wall", turtle_dir_deg]
@@ -95,7 +111,7 @@ class RobotCommands:
                 data[row][col] = ["Goal", turtle_dir_deg]
             else:
                 data[row][col] = turtle_dir_deg
-            
+
             # Write back to JSON
             with open(self.path, "w") as f:
                 json.dump(data, f, indent=2)
@@ -134,7 +150,11 @@ class RobotCommands:
                         turtle_pos = (r, c)
                         turtle_dir_deg = int(val) % 360
                         break
-                    if isinstance(val, list) and len(val) >= 2 and isinstance(val[1], (int, float)):
+                    if (
+                        isinstance(val, list)
+                        and len(val) >= 2
+                        and isinstance(val[1], (int, float))
+                    ):
                         turtle_pos = (r, c)
                         turtle_dir_deg = int(val[1]) % 360
                         break
@@ -180,7 +200,11 @@ class RobotCommands:
                         turtle_pos = (r, c)
                         turtle_dir_deg = int(val) % 360
                         break
-                    if isinstance(val, list) and len(val) >= 2 and isinstance(val[1], (int, float)):
+                    if (
+                        isinstance(val, list)
+                        and len(val) >= 2
+                        and isinstance(val[1], (int, float))
+                    ):
                         turtle_pos = (r, c)
                         turtle_dir_deg = int(val[1]) % 360
                         break
@@ -212,30 +236,34 @@ class RobotCommands:
         direction is a string: "FORWARD", "BACKWARD", "LEFT" or "RIGHT" (case-insensitive).
         Movement is blocked by grid bounds or walls. "Goal"/"GOAL" cells are treated as passable.
         """
-        with open(self.path, "r") as f: 
+        with open(self.path, "r") as f:
             data = json.load(f)
 
         turtle_pos = None
         turtle_angle = 0
 
-        for r in range(len(data)): 
-            for c in range(len(data[r])): 
+        for r in range(len(data)):
+            for c in range(len(data[r])):
                 value = data[r][c]
 
-                if isinstance(value, (int)): 
+                if isinstance(value, (int)):
                     # This means it is a turtle
                     turtle_pos = (r, c)
                     turtle_angle = value
                     break
-                if isinstance(value, list) and len(value) >= 2 and isinstance(value[1], (int, float)):
+                if (
+                    isinstance(value, list)
+                    and len(value) >= 2
+                    and isinstance(value[1], (int, float))
+                ):
                     # This means turtle is overlapping with a goal/wall
                     turtle_pos = (r, c)
                     turtle_angle = int(value[1]) % 360
                     break
 
-        if turtle_pos == None:
-            return False #TODO: Raise error here ex: "No turtle found on grid"
-        
+        if turtle_pos is None:
+            return False  # TODO: Raise error here ex: "No turtle found on grid"
+
         d = (direction or "").strip().upper()
         if d == "FORWARD":
             offset = 0
@@ -276,23 +304,24 @@ class RobotCommands:
         # Check if out of bounds
         max_rows = len(data)
         max_cols = len(data[0])
-        if (target_r < 0
-            or target_r >= max_rows
-            or target_c < 0
-            or target_c >= max_cols):
+        if target_r < 0 or target_r >= max_rows or target_c < 0 or target_c >= max_cols:
             return False
 
         target_value = data[target_r][target_c]
 
-        if isinstance(target_value, str): 
-            if target_value.upper() == "WALL": 
+        if isinstance(target_value, str):
+            if target_value.upper() == "WALL":
                 return False
 
         if isinstance(target_value, int):
             # occupied by another turtle
             return False
-        
-        if isinstance(target_value, list) and len(target_value) >= 2 and isinstance(target_value[1], (int, float)):
+
+        if (
+            isinstance(target_value, list)
+            and len(target_value) >= 2
+            and isinstance(target_value[1], (int, float))
+        ):
             # occupied by a turtle on a wall/goal, which shouldn't happen since only one turtle can exist
             return False
 
